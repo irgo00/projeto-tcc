@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('address');
+            $table->foreignId('route_id')
+                ->nullable()
+                ->constrained('routes')
+                ->onDelete('set null');
             $table->timestamps();
         });
     }

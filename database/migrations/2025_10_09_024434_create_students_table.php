@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('cpf', 14);
             $table->date('birth_date');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('responsible_id')->constrained('responsibles')->onDelete('cascade');
+            $table->foreignId('instituition_id')->constrained('instituitions')->onDelete('cascade');
             $table->timestamps();
         });
     }

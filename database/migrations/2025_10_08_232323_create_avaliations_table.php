@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('note');
             $table->text('comment')->nullable();
+            $table->foreignId('service_provider_id')->constrained('service_providers')->onDelete('cascade');
             $table->timestamps();
         });
     }

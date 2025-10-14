@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('responsibles', function (Blueprint $table) {
+        Schema::create('notification_route', function (Blueprint $table) {
             $table->id();
-            $table->string('cpf', 14);
-            $table->date('birth_date');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('notification_id')->constrained()->onDelete('cascade');
+            $table->foreignId('route_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('responsibles');
+        Schema::dropIfExists('notification_route');
     }
 };

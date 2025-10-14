@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('responsibles', function (Blueprint $table) {
+        Schema::create('service_providers', function (Blueprint $table) {
             $table->id();
-            $table->string('cpf', 14);
+            $table->string('cnpj', 14);
             $table->date('birth_date');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('phone', 20);
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('responsibles');
+        Schema::dropIfExists('service_providers');
     }
 };
