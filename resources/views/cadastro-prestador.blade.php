@@ -14,16 +14,21 @@
                 <input type="email" id="email" name="email" class="form-control" required>
             </div>
             <div class="col-md-6">
-                <label for="cpf" class="form-label">CPF</label>
-                <input type="text" id="cpf" name="cpf" class="form-control" required>
+                <label for="cnpj" class="form-label">CNPJ</label>
+                <input type="text" id="cnpj" name="cnpj" class="form-control" required>
             </div>
             <div class="col-md-6">
                 <label for="telefone" class="form-label">Telefone</label>
                 <input type="text" id="telefone" name="telefone" class="form-control" required>
             </div>
-            <div class="col-md-6">
-                <label for="rota" class="form-label">Rota Atendida</label>
-                <input type="text" id="rota" name="rota" class="form-control" placeholder="Ex: Bairro Centro - Escola Estadual" required>
+            <div class="col-md-12">
+                <label for="instituicoes" class="form-label">Instituições de Ensino</label>
+                <div id="instituicoes">
+                    <div class="input-group mb-3">
+                        <input type="text" name="instituicoes[]" class="form-control" placeholder="Ex: IFPR Campus Irati" required>
+                        <button type="button" class="btn btn-outline-secondary" onclick="addInstituicao()">+</button>
+                    </div>
+                </div>
             </div>
             <div class="col-md-6">
                 <label for="capacidade" class="form-label">Capacidade da Van</label>
@@ -44,4 +49,20 @@
         </div>
     </form>
 </div>
+
+<script>
+    function addInstituicao() {
+        var div = document.createElement("div");
+        div.classList.add("input-group", "mb-3");
+        div.innerHTML = `
+            <input type="text" name="instituicoes[]" class="form-control" placeholder="Ex: IFPR Campus Irati" required>
+            <button type="button" class="btn btn-outline-secondary" onclick="removeInstituicao(this)">-</button>
+        `;
+        document.getElementById("instituicoes").appendChild(div);
+    }
+
+    function removeInstituicao(button) {
+        button.parentElement.remove();
+    }
+</script>
 @endsection
