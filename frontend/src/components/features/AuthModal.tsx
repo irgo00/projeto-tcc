@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import Modal from '../common/Modal';
-import Input from '../common/Input';
-import Button from '../common/Button';
-import { useAuth } from '../../hooks/useAuth';
+import { useState, useEffect } from "react";
+import Modal from "../common/Modal";
+import Input from "../common/Input";
+import Button from "../common/Button";
+import { useAuth } from "../../hooks/useAuth";
 
 /* ---------- TIPOS ---------- */
-type AuthMode = 'login' | 'cadastro';
+type AuthMode = "login" | "cadastro";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -21,46 +21,74 @@ interface FormData {
   telefone: string;
   senha: string;
   confirmarSenha: string;
-  tipo: 'cliente' | 'prestador';
+  tipo: "cliente" | "prestador";
 }
 
-type FormErrors = Partial<Record<keyof FormData | 'submit', string>>;
+type FormErrors = Partial<Record<keyof FormData | "submit", string>>;
 
-interface AuthContext {
-  login: (email: string, senha: string) => Promise<void>;
-  register: (data: FormData) => Promise<void>;
-}
-/* --------------------------- */
-
-const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) => {
+const AuthModal = ({
+  isOpen,
+  onClose,
+  initialMode = "login",
+}: AuthModalProps) => {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [formData, setFormData] = useState<FormData>({
-    nome: '',
-    email: '',
-    cpf: '',
-    dataNascimento: '',
-    telefone: '',
-    senha: '',
-    confirmarSenha: '',
-    tipo: 'cliente',
+    nome: "",
+    email: "",
+    cpf: "",
+    dataNascimento: "",
+    telefone: "",
+    senha: "",
+    confirmarSenha: "",
+    tipo: "cliente",
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const { login, register } = useAuth() as AuthContext;
+  const { login, register } = useAuth();
 
-  const isLogin = mode === 'login';
+  const isLogin = mode === "login";
+
+  /* =====================
+     SINCRONIZA O MODO
+  ===================== */
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+    }
+  }, [isOpen, initialMode]);
+
+  /* =====================
+     RESET AO ABRIR
+  ===================== */
+  useEffect(() => {
+    if (isOpen) {
+      setErrors({});
+      setFormData({
+        nome: "",
+        email: "",
+        cpf: "",
+        dataNascimento: "",
+        telefone: "",
+        senha: "",
+        confirmarSenha: "",
+        tipo: "cliente",
+      });
+    }
+  }, [isOpen]);
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
 
     if (!isLogin) {
-      if (!formData.nome.trim()) newErrors.nome = 'Nome é obrigatório';
-      if (!formData.cpf.trim()) newErrors.cpf = 'CPF é obrigatório';
-      if (!formData.dataNascimento) newErrors.dataNascimento = 'Data de nascimento é obrigatória';
-      if (!formData.telefone.trim()) newErrors.telefone = 'Telefone é obrigatório';
+      if (!formData.nome.trim()) newErrors.nome = "Nome é obrigatório";
+      if (!formData.cpf.trim()) newErrors.cpf = "CPF é obrigatório";
+      if (!formData.dataNascimento)
+        newErrors.dataNascimento = "Data de nascimento é obrigatória";
+      if (!formData.telefone.trim())
+        newErrors.telefone = "Telefone é obrigatório";
 
       if (formData.senha !== formData.confirmarSenha) {
-        newErrors.confirmarSenha = 'As senhas não coincidem';
+        newErrors.confirmarSenha = "As senhas não coincidem";
       }
 
       if (formData.dataNascimento) {
@@ -68,21 +96,21 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
         const nascimento = new Date(formData.dataNascimento);
         const idade = hoje.getFullYear() - nascimento.getFullYear();
         if (idade < 13) {
-          newErrors.dataNascimento = 'É necessário ter 13 anos ou mais';
+          newErrors.dataNascimento = "É necessário ter 13 anos ou mais";
         }
       }
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
+      newErrors.email = "Email é obrigatório";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
+      newErrors.email = "Email inválido";
     }
 
     if (!formData.senha.trim()) {
-      newErrors.senha = 'Senha é obrigatória';
+      newErrors.senha = "Senha é obrigatória";
     } else if (formData.senha.length < 6) {
-      newErrors.senha = 'Senha deve ter no mínimo 6 caracteres';
+      newErrors.senha = "Senha deve ter no mínimo 6 caracteres";
     }
 
     setErrors(newErrors);
@@ -101,20 +129,23 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
       onClose();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Erro ao processar requisição';
+        error instanceof Error ? error.message : "Erro ao processar requisição";
       setErrors({ submit: message });
     }
   };
 
-  const handleChange = <K extends keyof FormData>(field: K, value: FormData[K]) => {
+  const handleChange = <K extends keyof FormData>(
+    field: K,
+    value: FormData[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const toggleMode = () => {
-    setMode(mode === 'login' ? 'cadastro' : 'login');
+    setMode(mode === "login" ? "cadastro" : "login");
     setErrors({});
   };
 
@@ -122,7 +153,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isLogin ? 'Bem-vindo de volta!' : 'Criar Conta'}
+      title={isLogin ? "Bem-vindo de volta!" : "Criar Conta"}
       size="sm"
     >
       <div className="space-y-4">
@@ -131,7 +162,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
             label="Nome Completo"
             type="text"
             value={formData.nome}
-            onChange={(e) => handleChange('nome', e.target.value)}
+            onChange={(e) => handleChange("nome", e.target.value)}
             placeholder="Digite seu nome"
             error={errors.nome}
             required
@@ -142,7 +173,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           label="Email"
           type="email"
           value={formData.email}
-          onChange={(e) => handleChange('email', e.target.value)}
+          onChange={(e) => handleChange("email", e.target.value)}
           placeholder="seu@email.com"
           error={errors.email}
           required
@@ -154,7 +185,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
               label="CPF"
               type="text"
               value={formData.cpf}
-              onChange={(e) => handleChange('cpf', e.target.value)}
+              onChange={(e) => handleChange("cpf", e.target.value)}
               placeholder="000.000.000-00"
               error={errors.cpf}
               required
@@ -164,7 +195,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
               label="Data de Nascimento"
               type="date"
               value={formData.dataNascimento}
-              onChange={(e) => handleChange('dataNascimento', e.target.value)}
+              onChange={(e) => handleChange("dataNascimento", e.target.value)}
               error={errors.dataNascimento}
               required
             />
@@ -178,7 +209,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
               label="Telefone"
               type="tel"
               value={formData.telefone}
-              onChange={(e) => handleChange('telefone', e.target.value)}
+              onChange={(e) => handleChange("telefone", e.target.value)}
               placeholder="(00) 00000-0000"
               error={errors.telefone}
               required
@@ -191,22 +222,22 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => handleChange('tipo', 'cliente')}
+                  onClick={() => handleChange("tipo", "cliente")}
                   className={`py-3 rounded-lg font-medium transition ${
-                    formData.tipo === 'cliente'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    formData.tipo === "cliente"
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Cliente
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleChange('tipo', 'prestador')}
+                  onClick={() => handleChange("tipo", "prestador")}
                   className={`py-3 rounded-lg font-medium transition ${
-                    formData.tipo === 'prestador'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    formData.tipo === "prestador"
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   Prestador
@@ -220,7 +251,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           label="Senha"
           type="password"
           value={formData.senha}
-          onChange={(e) => handleChange('senha', e.target.value)}
+          onChange={(e) => handleChange("senha", e.target.value)}
           placeholder="Digite sua senha"
           error={errors.senha}
           required
@@ -231,7 +262,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
             label="Confirmar Senha"
             type="password"
             value={formData.confirmarSenha}
-            onChange={(e) => handleChange('confirmarSenha', e.target.value)}
+            onChange={(e) => handleChange("confirmarSenha", e.target.value)}
             placeholder="Digite sua senha novamente"
             error={errors.confirmarSenha}
             required
@@ -244,13 +275,21 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           </div>
         )}
 
-        <Button variant="primary" size="lg" onClick={handleSubmit} className="w-full">
-          {isLogin ? 'Entrar' : 'Cadastrar'}
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={handleSubmit}
+          className="w-full"
+        >
+          {isLogin ? "Entrar" : "Cadastrar"}
         </Button>
 
         {isLogin && (
           <div className="text-center">
-            <a href="#" className="text-sm text-purple-600 hover:text-purple-700">
+            <a
+              href="#"
+              className="text-sm text-purple-600 hover:text-purple-700"
+            >
               Esqueci minha senha
             </a>
           </div>
@@ -258,9 +297,12 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
 
         <div className="text-center pt-4 border-t">
           <p className="text-sm text-gray-600">
-            {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
-            <button onClick={toggleMode} className="text-purple-600 hover:text-purple-700 font-medium">
-              {isLogin ? 'Cadastre-se' : 'Faça login'}
+            {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
+            <button
+              onClick={toggleMode}
+              className="text-purple-600 hover:text-purple-700 font-medium"
+            >
+              {isLogin ? "Cadastre-se" : "Faça login"}
             </button>
           </p>
         </div>

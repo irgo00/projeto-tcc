@@ -2,12 +2,16 @@ export const PERIODOS = {
   MANHA: 'manha',
   TARDE: 'tarde',
   NOITE: 'noite',
-};
+} as const;
+
+export type Periodo = typeof PERIODOS[keyof typeof PERIODOS];
 
 export const TIPOS_USUARIO = {
   CLIENTE: 'cliente',
   PRESTADOR: 'prestador',
-};
+} as const;
+
+export type TipoUsuario = typeof TIPOS_USUARIO[keyof typeof TIPOS_USUARIO];
 
 export const BAIRROS_IRATI = [
   'Centro',
@@ -29,7 +33,9 @@ export const STATUS_VAN = {
   ATIVA: 'ativa',
   INATIVA: 'inativa',
   MANUTENCAO: 'manutencao',
-};
+} as const;
+
+export type StatusVan = typeof STATUS_VAN[keyof typeof STATUS_VAN];
 
 export const MENSAGENS = {
   ERRO_GENERICO: 'Ocorreu um erro. Tente novamente.',

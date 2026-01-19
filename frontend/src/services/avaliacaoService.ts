@@ -1,33 +1,22 @@
-import api from './api';
+import api from "./api";
+import type { Avaliacao } from "../types/Avaliacao";
 
 export const avaliacaoService = {
-  // Criar avaliação
-  criar: async (avaliacaoData) => {
-    try {
-      const response = await api.post('/avaliacoes', avaliacaoData);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao criar avaliação');
-    }
+  criar: async (
+    avaliacaoData: Omit<Avaliacao, "id" | "createdAt">
+  ): Promise<Avaliacao> => {
+    const response = await api.post<Avaliacao>("/avaliacoes", avaliacaoData);
+    return response.data;
   },
 
-  // Listar avaliações de uma van
-  listarPorVan: async (vanId) => {
-    try {
-      const response = await api.get(`/avaliacoes/van/${vanId}`);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao listar avaliações');
-    }
+  listarPorVan: async (vanId: number): Promise<Avaliacao[]> => {
+    const response = await api.get<Avaliacao[]>(`/avaliacoes/van/${vanId}`);
+    return response.data;
   },
 
-  // Minhas avaliações
-  minhas: async () => {
-    try {
-      const response = await api.get('/avaliacoes/minhas');
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao buscar suas avaliações');
-    }
+  minhas: async (): Promise<Avaliacao[]> => {
+    const response = await api.get<Avaliacao[]>("/avaliacoes/minhas");
+    return response.data;
   },
 };
+export default avaliacaoService;

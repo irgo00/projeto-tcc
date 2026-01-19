@@ -1,7 +1,7 @@
 import { MapPin, Clock, Users, Star, Heart, ChevronRight } from "lucide-react";
 import Button from "../common/Button";
 
-interface Van {
+export interface Van {
   id: number;
   nome: string;
   prestador: string;
@@ -10,6 +10,9 @@ interface Van {
   vagas: number;
   avaliacao: number;
   totalAvaliacoes: number;
+
+  telefone?: string;
+  email?: string;
 }
 
 interface VanCardProps {

@@ -1,72 +1,38 @@
 import api from './api';
+import type { Van } from '../types/Van';
 
 export const vanService = {
-  // Buscar vans
-  buscar: async (filtros) => {
-    try {
-      const response = await api.post('/vans/buscar', filtros);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao buscar vans');
-    }
+  buscar: async (filtros: Partial<Van>): Promise<Van[]> => {
+    const response = await api.post<Van[]>('/vans/buscar', filtros);
+    return response.data;
   },
 
-  // Listar todas as vans
-  listar: async () => {
-    try {
-      const response = await api.get('/vans');
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao listar vans');
-    }
+  listar: async (): Promise<Van[]> => {
+    const response = await api.get<Van[]>('/vans');
+    return response.data;
   },
 
-  // Detalhes da van
-  detalhes: async (id) => {
-    try {
-      const response = await api.get(`/vans/${id}`);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao buscar detalhes');
-    }
+  detalhes: async (id: number): Promise<Van> => {
+    const response = await api.get<Van>(`/vans/${id}`);
+    return response.data;
   },
 
-  // Criar van (prestador)
-  criar: async (vanData) => {
-    try {
-      const response = await api.post('/vans', vanData);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao criar van');
-    }
+  criar: async (vanData: Omit<Van, 'id'>): Promise<Van> => {
+    const response = await api.post<Van>('/vans', vanData);
+    return response.data;
   },
 
-  // Atualizar van (prestador)
-  atualizar: async (id, vanData) => {
-    try {
-      const response = await api.put(`/vans/${id}`, vanData);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao atualizar van');
-    }
+  atualizar: async (id: number, vanData: Partial<Van>): Promise<Van> => {
+    const response = await api.put<Van>(`/vans/${id}`, vanData);
+    return response.data;
   },
 
-  // Deletar van (prestador)
-  deletar: async (id) => {
-    try {
-      await api.delete(`/vans/${id}`);
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao deletar van');
-    }
+  deletar: async (id: number): Promise<void> => {
+    await api.delete(`/vans/${id}`);
   },
 
-  // Minhas vans (prestador)
-  minhasVans: async () => {
-    try {
-      const response = await api.get('/vans/minhas');
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao buscar suas vans');
-    }
+  minhasVans: async (): Promise<Van[]> => {
+    const response = await api.get<Van[]>('/vans/minhas');
+    return response.data;
   },
 };

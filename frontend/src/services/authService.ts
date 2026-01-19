@@ -1,76 +1,78 @@
 import api from './api';
+import type { User } from '../types';
+import type { AxiosError } from 'axios';
+
+interface AuthResponse {
+  token: string;
+  user: User;
+}
 
 export const authService = {
-  // Login
-  login: async (email, senha) => {
+  login: async (email: string, senha: string): Promise<AuthResponse> => {
     try {
-      const response = await api.post('/login', { email, senha });
+      const response = await api.post<AuthResponse>('/login', { email, senha });
       const { token, user } = response.data;
-      
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return { token, user };
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao fazer login');
+      const err = error as AxiosError<{ message: string }>;
+      throw new Error(err.response?.data?.message || 'Erro ao fazer login');
     }
   },
 
-  // Registro
-  register: async (userData) => {
+  register: async (userData: Partial<User>): Promise<AuthResponse> => {
     try {
-      const response = await api.post('/register', userData);
+      const response = await api.post<AuthResponse>('/register', userData);
       const { token, user } = response.data;
-      
+
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       return { token, user };
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao criar conta');
+      const err = error as AxiosError<{ message: string }>;
+      throw new Error(err.response?.data?.message || 'Erro ao criar conta');
     }
   },
 
-  // Logout
-  logout: () => {
+  logout: (): void => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   },
 
-  // Obter usuário atual
-  getCurrentUser: () => {
+  getCurrentUser: (): User | null => {
     const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    return userStr ? (JSON.parse(userStr) as User) : null;
   },
 
-  // Verificar se está autenticado
-  isAuthenticated: () => {
+  isAuthenticated: (): boolean => {
     return !!localStorage.getItem('token');
   },
 
-  // Atualizar perfil
-  updateProfile: async (userData) => {
+  updateProfile: async (userData: Partial<User>): Promise<User> => {
     try {
-      const response = await api.put('/profile', userData);
-      const { user } = response.data;
-      
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      return user;
+      const response = await api.put<{ user: User }>('/profile', userData);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      return response.data.user;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao atualizar perfil');
+      const err = error as AxiosError<{ message: string }>;
+      throw new Error(err.response?.data?.message || 'Erro ao atualizar perfil');
     }
   },
 
-  // Alterar senha
-  changePassword: async (senhaAtual, novaSenha) => {
+  changePassword: async (senhaAtual: string, novaSenha: string): Promise<void> => {
     try {
       await api.post('/change-password', {
         senha_atual: senhaAtual,
         nova_senha: novaSenha,
       });
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Erro ao alterar senha');
+      const err = error as AxiosError<{ message: string }>;
+      throw new Error(err.response?.data?.message || 'Erro ao alterar senha');
     }
   },
 };
+export default authService;

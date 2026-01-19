@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { User, Mail, Phone, Calendar, Edit2, Save, X } from "lucide-react";
@@ -38,7 +38,7 @@ const MeuPerfil = () => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-12">
+          <div className="bg-linear-to-r from-purple-600 to-purple-800 px-8 py-12">
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center">
                 <User className="w-12 h-12 text-purple-600" />

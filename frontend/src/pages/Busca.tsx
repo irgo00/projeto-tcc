@@ -1,41 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
-import VanCard from '../components/features/VanCard';
-import VanDetailsModal from '../components/features/VanDetailsModal';
-import AuthModal from '../components/features/AuthModal';
-import { Filter, SlidersHorizontal } from 'lucide-react';
-import Button from '../components/common/Button';
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
+import VanCard from "../components/features/VanCard";
+import VanDetailsModal from "../components/features/VanDetailsModal";
+import AuthModal from "../components/features/AuthModal";
+import { Filter, SlidersHorizontal } from "lucide-react";
+import Button from "../components/common/Button";
+import type { Van, AuthMode } from "../types";
 
 const Busca = () => {
   const location = useLocation();
-  const [authModal, setAuthModal] = useState(null);
-  const [selectedVan, setSelectedVan] = useState(null);
-  const [favorites, setFavorites] = useState([]);
-  const [filters, setFilters] = useState(location.state?.filters || {});
+  const [authModal, setAuthModal] = useState<AuthMode | null>(null);
+  const [selectedVan, setSelectedVan] = useState<Van | null>(null);
+  const [favorites, setFavorites] = useState<number[]>([]);
+
+  const [filters] = useState(location.state?.filters || {});
   const [showFilters, setShowFilters] = useState(false);
 
   // Mock data - substituir por chamada API
   const vans = [
     {
       id: 1,
-      nome: 'Van Escolar Central',
-      prestador: 'João Silva Transportes',
-      rota: 'Centro → UNICENTRO (Campus Santa Cruz)',
-      horario: 'Manhã: 06:30 | Tarde: 13:00',
+      nome: "Van Escolar Central",
+      prestador: "João Silva Transportes",
+      rota: "Centro → UNICENTRO (Campus Santa Cruz)",
+      horario: "Manhã: 06:30 | Tarde: 13:00",
       vagas: 3,
       avaliacao: 4.8,
       totalAvaliacoes: 24,
-      telefone: '(42) 99999-0001',
-      email: 'joao.van@email.com',
+      telefone: "(42) 99999-0001",
+      email: "joao.van@email.com",
     },
     // Adicionar mais vans conforme necessário
   ];
 
-  const handleToggleFavorite = (vanId) => {
+  const handleToggleFavorite = (vanId: number) => {
     setFavorites((prev) =>
-      prev.includes(vanId) ? prev.filter((id) => id !== vanId) : [...prev, vanId]
+      prev.includes(vanId)
+        ? prev.filter((id) => id !== vanId)
+        : [...prev, vanId]
     );
   };
 
@@ -58,7 +62,8 @@ const Busca = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              {vans.length} {vans.length === 1 ? 'van encontrada' : 'vans encontradas'}
+              {vans.length}{" "}
+              {vans.length === 1 ? "van encontrada" : "vans encontradas"}
             </h2>
           </div>
           <Button
@@ -67,7 +72,7 @@ const Busca = () => {
             className="flex items-center gap-2"
           >
             <SlidersHorizontal className="w-5 h-5" />
-            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+            {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
           </Button>
         </div>
 
@@ -153,7 +158,7 @@ const Busca = () => {
       <AuthModal
         isOpen={!!authModal}
         onClose={() => setAuthModal(null)}
-        initialMode={authModal}
+        initialMode={authModal ?? undefined}
       />
 
       <Footer />

@@ -1,19 +1,7 @@
 import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
-
-interface Van {
-  id: number;
-  nome: string;
-  prestador: string;
-  rota: string;
-  horario: string;
-  vagas: number;
-  avaliacao: number;
-  totalAvaliacoes: number;
-  telefone: string;
-  email: string;
-}
+import type { Van } from './VanCard';
 
 interface VanDetailsModalProps {
   van: Van | null;
@@ -22,8 +10,12 @@ interface VanDetailsModalProps {
   onAvaliar: (van: Van) => void;
 }
 
-const VanDetailsModal = ({ van, isOpen, onClose, onAvaliar }: VanDetailsModalProps) => {
-
+const VanDetailsModal = ({
+  van,
+  isOpen,
+  onClose,
+  onAvaliar,
+}: VanDetailsModalProps) => {
   if (!van) return null;
 
   return (
@@ -51,13 +43,16 @@ const VanDetailsModal = ({ van, isOpen, onClose, onAvaliar }: VanDetailsModalPro
               </h3>
               <p className="text-gray-700 ml-7 text-sm">{van.horario}</p>
             </div>
+
             <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
                 <Users className="w-5 h-5 mr-2 text-purple-600" />
                 Disponibilidade
               </h3>
               <p className="text-gray-700 ml-7">
-                <span className="text-2xl font-bold text-purple-600">{van.vagas}</span>
+                <span className="text-2xl font-bold text-purple-600">
+                  {van.vagas}
+                </span>
                 <span className="text-sm ml-1">vagas disponíveis</span>
               </p>
             </div>
@@ -65,15 +60,21 @@ const VanDetailsModal = ({ van, isOpen, onClose, onAvaliar }: VanDetailsModalPro
 
           <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-3">Contato</h3>
+
             <div className="space-y-2 ml-1">
-              <div className="flex items-center text-gray-700">
-                <Phone className="w-4 h-4 mr-3 text-purple-600" />
-                <span>{van.telefone}</span>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <Mail className="w-4 h-4 mr-3 text-purple-600" />
-                <span>{van.email}</span>
-              </div>
+              {van.telefone && (
+                <div className="flex items-center text-gray-700">
+                  <Phone className="w-4 h-4 mr-3 text-purple-600" />
+                  <span>{van.telefone}</span>
+                </div>
+              )}
+
+              {van.email && (
+                <div className="flex items-center text-gray-700">
+                  <Mail className="w-4 h-4 mr-3 text-purple-600" />
+                  <span>{van.email}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -82,8 +83,12 @@ const VanDetailsModal = ({ van, isOpen, onClose, onAvaliar }: VanDetailsModalPro
               <Star className="w-5 h-5 mr-2 text-yellow-400 fill-current" />
               Avaliações
             </h3>
+
             <div className="flex items-center mb-4">
-              <span className="text-4xl font-bold text-gray-900">{van.avaliacao.toFixed(1)}</span>
+              <span className="text-4xl font-bold text-gray-900">
+                {van.avaliacao.toFixed(1)}
+              </span>
+
               <div className="ml-4">
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -97,9 +102,13 @@ const VanDetailsModal = ({ van, isOpen, onClose, onAvaliar }: VanDetailsModalPro
                     />
                   ))}
                 </div>
-                <span className="text-sm text-gray-600">{van.totalAvaliacoes} avaliações</span>
+
+                <span className="text-sm text-gray-600">
+                  {van.totalAvaliacoes} avaliações
+                </span>
               </div>
             </div>
+
             <button
               onClick={() => onAvaliar(van)}
               className="text-purple-600 hover:text-purple-700 font-medium text-sm"
@@ -114,6 +123,7 @@ const VanDetailsModal = ({ van, isOpen, onClose, onAvaliar }: VanDetailsModalPro
             <Phone className="w-5 h-5" />
             Entrar em Contato
           </Button>
+
           <Button variant="outline" className="w-full">
             Salvar nos Favoritos
           </Button>

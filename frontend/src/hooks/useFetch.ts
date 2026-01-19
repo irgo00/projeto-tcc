@@ -1,38 +1,39 @@
 import { useState, useEffect } from 'react';
 
-export const useFetch = (fetchFunction, dependencies = []) => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+type FetchFunction<T> = () => Promise<T>;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await fetchFunction();
-        setData(result);
-      } catch (err) {
-        setError(err.message || 'Erro ao carregar dados');
-      } finally {
-        setLoading(false);
-      }
-    };
+export const useFetch = <T>(
+  fetchFunction: FetchFunction<T>,
+  dependencies: any[] = []
+) => {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-    fetchData();
-  }, dependencies);
-
-  const refetch = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
       const result = await fetchFunction();
       setData(result);
     } catch (err) {
-      setError(err.message || 'Erro ao carregar dados');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Erro ao carregar dados');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies);
+
+  const refetch = async () => {
+    await fetchData();
   };
 
   return { data, loading, error, refetch };
