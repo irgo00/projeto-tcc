@@ -1,12 +1,15 @@
 // Formatar CPF
-export const formatCPF = (cpf: string): string => {
-  if (!cpf) return "";
+export const formatCPF = (cpf: string) => {
+  if (!cpf) return '';
+
+  cpf = cpf.replace(/\D/g, '').slice(0, 11);
+
   return cpf
-    .replace(/\D/g, "")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 };
+
 
 // Formatar telefone
 export const formatTelefone = (telefone: string): string => {

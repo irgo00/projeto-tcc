@@ -6,7 +6,7 @@ interface AuthContextData {
   user: User | null;
   loading: boolean;
   login: (email: string, senha: string) => Promise<User>;
-  register: (data: any) => Promise<User>;
+  register: (data: Partial<User>) => Promise<User>;
   logout: () => void;
   updateUser: (user: User) => void;
   isAuthenticated: boolean;
@@ -28,7 +28,7 @@ export const AuthContext = createContext<AuthContextData | null>(null);
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadUser = () => {
@@ -41,31 +41,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = async (email: string, senha: string): Promise<User> => {
-    try {
-      const { user } = await authService.login(email, senha);
-      setUser(user);
-      return user;
-    } catch (error) {
-      throw error;
-    }
+    const { user } = await authService.login(email, senha);
+    setUser(user);
+    return user;
   };
 
   const register = async (userData: Partial<User>): Promise<User> => {
-    try {
-      const { user } = await authService.register(userData);
-      setUser(user);
-      return user;
-    } catch (error) {
-      throw error;
-    }
+    const { user } = await authService.register(userData);
+    setUser(user);
+    return user;
   };
 
-  const logout = (): void => {
+  const logout = () => {
     authService.logout();
     setUser(null);
   };
 
-  const updateUser = (userData: User): void => {
+  const updateUser = (userData: User) => {
     setUser(userData);
   };
 

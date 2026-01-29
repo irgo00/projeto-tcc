@@ -1,24 +1,12 @@
 import { MapPin, Clock, Users, Star, Heart, ChevronRight } from "lucide-react";
 import Button from "../common/Button";
-
-export interface Van {
-  id: number;
-  nome: string;
-  prestador: string;
-  rota: string;
-  horario: string;
-  vagas: number;
-  avaliacao: number;
-  totalAvaliacoes: number;
-
-  telefone?: string;
-  email?: string;
-}
+import type { Van } from "../../types/Van";
 
 interface VanCardProps {
   van: Van;
   isFavorite: boolean;
   onViewDetails: (van: Van) => void;
+  onViewRoute: (van: Van) => void;
   onToggleFavorite: (id: number) => void;
 }
 
@@ -28,6 +16,10 @@ const VanCard = ({
   onToggleFavorite,
   isFavorite,
 }: VanCardProps) => {
+  function onViewRoute(_van: Van): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-100">
       <div className="flex justify-between items-start mb-4">
@@ -71,14 +63,25 @@ const VanCard = ({
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-3">
+
+      <Button
+        variant="outline"
+        onClick={() => onViewRoute(van)}
+        className="flex items-center justify-center gap-2"
+      >
+        Ver Rota
+      </Button>
+
       <Button
         variant="primary"
         onClick={() => onViewDetails(van)}
-        className="w-full flex items-center justify-center gap-2"
+        className="flex items-center justify-center gap-2"
       >
-        Ver Detalhes
+        Detalhes
         <ChevronRight className="w-4 h-4" />
       </Button>
+      </div>
     </div>
   );
 };

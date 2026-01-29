@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Search, MapPin, Clock } from 'lucide-react';
-import Input from '../common/Input';
-import Button from '../common/Button';
+import { useState } from "react";
+import { Search, MapPin, Clock } from "lucide-react";
+import Input from "../common/Input";
+import Button from "../common/Button";
 
 interface SearchParams {
   origem: string;
@@ -11,19 +11,28 @@ interface SearchParams {
 
 interface SearchSectionProps {
   onSearch: (params: SearchParams) => void;
+  showResultsCount?: boolean;
+  resultsCount?: number;
 }
 
-const SearchSection = ({ onSearch }: SearchSectionProps) => {
-  const [origem, setOrigem] = useState('');
-  const [instituicao, setInstituicao] = useState('');
-  const [periodo, setPeriodo] = useState('manha');
+const SearchSection = ({ onSearch, showResultsCount, resultsCount }: SearchSectionProps) => {
+  const [origem, setOrigem] = useState("");
+  const [instituicao, setInstituicao] = useState("");
+  const [periodo, setPeriodo] = useState("manha");
 
   const handleSubmit = () => {
     onSearch({ origem, instituicao, periodo });
   };
 
   return (
-    <div className="bg-linear-to-br from-purple-600 to-purple-800 text-white py-20">
+    <div className="bg-gradient-to-br from-purple-600 to-purple-800 text-white py-20">
+      {/* ↑↑↑ 
+        bg-gradient-to-br = gradiente diagonal
+        from-purple-600 = roxo claro inicial
+        to-purple-800 = roxo escuro final
+        text-white = texto branco
+        py-20 = padding vertical (espaçamento)
+      */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -32,6 +41,12 @@ const SearchSection = ({ onSearch }: SearchSectionProps) => {
           <p className="text-xl text-purple-100">
             Conectando estudantes aos melhores serviços em Irati-PR
           </p>
+          {showResultsCount && (
+            <p className="text-lg text-purple-200 mt-2">
+              {resultsCount}{" "}
+              {resultsCount === 1 ? "van encontrada" : "vans encontradas"}
+            </p>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-4xl mx-auto">
@@ -62,14 +77,14 @@ const SearchSection = ({ onSearch }: SearchSectionProps) => {
                 Período
               </label>
               <div className="grid grid-cols-3 gap-3">
-                {['Manhã', 'Tarde', 'Noite'].map((p) => (
+                {["Manhã", "Tarde", "Noite"].map((p) => (
                   <button
                     key={p}
                     onClick={() => setPeriodo(p.toLowerCase())}
                     className={`py-3 rounded-lg font-medium transition ${
                       periodo === p.toLowerCase()
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? "bg-purple-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
                     {p}

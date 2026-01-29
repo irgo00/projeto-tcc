@@ -109,8 +109,8 @@ const AuthModal = ({
 
     if (!formData.senha.trim()) {
       newErrors.senha = "Senha é obrigatória";
-    } else if (formData.senha.length < 6) {
-      newErrors.senha = "Senha deve ter no mínimo 6 caracteres";
+    } else if (formData.senha.length < 8) {
+      newErrors.senha = "Senha deve ter no mínimo 8 caracteres";
     }
 
     setErrors(newErrors);
@@ -136,7 +136,7 @@ const AuthModal = ({
 
   const handleChange = <K extends keyof FormData>(
     field: K,
-    value: FormData[K]
+    value: FormData[K],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -183,6 +183,7 @@ const AuthModal = ({
           <>
             <Input
               label="CPF"
+              name="cpf"
               type="text"
               value={formData.cpf}
               onChange={(e) => handleChange("cpf", e.target.value)}
@@ -200,7 +201,7 @@ const AuthModal = ({
               required
             />
             {!errors.dataNascimento && (
-              <p className="text-xs text-gray-500 -mt-2">
+              <p className="text-sm text-gray-500 -mt-2">
                 É necessário ter 13 anos ou mais para criar uma conta
               </p>
             )}
@@ -256,6 +257,11 @@ const AuthModal = ({
           error={errors.senha}
           required
         />
+        {!errors.senha && (
+              <p className="text-sm text-gray-500 -mt-2">
+                É necessário no mínimo 8 caracteres.
+              </p>
+            )}
 
         {!isLogin && (
           <Input

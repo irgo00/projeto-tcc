@@ -1,7 +1,7 @@
 import { MapPin, Clock, Users, Star, Phone, Mail } from 'lucide-react';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
-import type { Van } from './VanCard';
+import type { Van } from '../../types/Van';
 
 interface VanDetailsModalProps {
   van: Van | null;

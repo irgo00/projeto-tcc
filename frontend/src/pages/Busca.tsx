@@ -1,25 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { Filter, SlidersHorizontal } from "lucide-react";
+
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import SearchSection from "../components/features/SearchSection";
 import VanCard from "../components/features/VanCard";
 import VanDetailsModal from "../components/features/VanDetailsModal";
 import AuthModal from "../components/features/AuthModal";
-import { Filter, SlidersHorizontal } from "lucide-react";
 import Button from "../components/common/Button";
-import type { Van, AuthMode } from "../types";
+
+import type { AuthMode } from "../types";
+import type { Van } from "../types/Van";
+import RouteMapModal from "../components/features/RouteMapModal";
 
 const Busca = () => {
   const location = useLocation();
-  const [authModal, setAuthModal] = useState<AuthMode | null>(null);
+
+  /* =====================
+     Estados principais
+  ===================== */
+  const [routeVan, setRouteVan] = useState<Van | null>(null);
+  const [filteredVans, setFilteredVans] = useState<Van[]>([]);
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
-
-  const [filters] = useState(location.state?.filters || {});
+  const [authModal, setAuthModal] = useState<AuthMode | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Mock data - substituir por chamada API
-  const vans = [
+  const filters = location.state?.filters || {};
+
+  /* =====================
+     Mock de vans
+     (substituir por API)
+  ===================== */
+
+  const vans: Van[] = [
     {
       id: 1,
       nome: "Van Escolar Central",
@@ -32,40 +47,76 @@ const Busca = () => {
       telefone: "(42) 99999-0001",
       email: "joao.van@email.com",
     },
-    // Adicionar mais vans conforme necessário
   ];
+
+  /* =====================
+     Função de busca
+     (EXATAMENTE como pedido)
+  ===================== */
+
+  const performSearch = (filters: any) => {
+    let results = vans;
+
+    if (filters.origem) {
+      results = results.filter((van) =>
+        van.rota.toLowerCase().includes(filters.origem.toLowerCase()),
+      );
+    }
+
+    if (filters.instituicao) {
+      results = results.filter((van) =>
+        van.rota.toLowerCase().includes(filters.instituicao.toLowerCase()),
+      );
+    }
+
+    setFilteredVans(results);
+  };
+
+  /* =====================
+     Busca automática
+     ao entrar na página
+  ===================== */
+
+  useEffect(() => {
+    if (filters) {
+      performSearch(filters);
+    }
+  }, [filters]);
+
+  /* =====================
+     Favoritos
+  ===================== */
 
   const handleToggleFavorite = (vanId: number) => {
     setFavorites((prev) =>
       prev.includes(vanId)
         ? prev.filter((id) => id !== vanId)
-        : [...prev, vanId]
+        : [...prev, vanId],
     );
   };
+
+  /* =====================
+     Render
+  ===================== */
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onOpenAuth={setAuthModal} />
 
-      <div className="bg-purple-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-2">Resultados da Busca</h1>
-          <p className="text-purple-100">
-            {filters.origem && `De ${filters.origem} `}
-            {filters.instituicao && `para ${filters.instituicao}`}
-            {filters.periodo && ` - Período: ${filters.periodo}`}
-          </p>
-        </div>
-      </div>
+      {/* 🔹 SearchSection NOVO */}
+      <SearchSection
+        onSearch={performSearch}
+        showResultsCount
+        resultsCount={filteredVans.length}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              {vans.length}{" "}
-              {vans.length === 1 ? "van encontrada" : "vans encontradas"}
-            </h2>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {filteredVans.length}{" "}
+            {filteredVans.length === 1 ? "van encontrada" : "vans encontradas"}
+          </h2>
+
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
@@ -80,66 +131,53 @@ const Busca = () => {
           <div className="bg-white rounded-xl shadow-md p-6 mb-8">
             <h3 className="text-lg font-semibold mb-4">Filtros Avançados</h3>
             <div className="grid md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Número de Vagas
-                </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                  <option>Qualquer</option>
-                  <option>1+</option>
-                  <option>2+</option>
-                  <option>3+</option>
-                  <option>5+</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Avaliação Mínima
-                </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                  <option>Qualquer</option>
-                  <option>4.0+</option>
-                  <option>4.5+</option>
-                  <option>4.8+</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ordenar por
-                </label>
-                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                  <option>Mais relevantes</option>
-                  <option>Melhor avaliação</option>
-                  <option>Mais vagas</option>
-                  <option>Menor preço</option>
-                </select>
-              </div>
+              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <option>Qualquer número de vagas</option>
+                <option>1+</option>
+                <option>2+</option>
+                <option>3+</option>
+              </select>
+
+              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <option>Avaliação mínima</option>
+                <option>4.0+</option>
+                <option>4.5+</option>
+              </select>
+
+              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <option>Ordenar por</option>
+                <option>Melhor avaliação</option>
+                <option>Mais vagas</option>
+              </select>
             </div>
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {vans.map((van) => (
-            <VanCard
-              key={van.id}
-              van={van}
-              onViewDetails={setSelectedVan}
-              onToggleFavorite={handleToggleFavorite}
-              isFavorite={favorites.includes(van.id)}
-            />
-          ))}
-        </div>
+        {/* 🔹 Renderiza filteredVans */}
+        {filteredVans.length > 0 && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredVans.map((van) => (
+              <VanCard
+                key={van.id}
+                van={van}
+                onViewDetails={setSelectedVan}
+                onViewRoute={setRouteVan}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorite={favorites.includes(van.id)}
+              />
+            ))}
+          </div>
+        )}
 
-        {vans.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <Filter className="w-24 h-24 mx-auto" />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+        {/* 🔹 Nenhuma van encontrada */}
+        {filteredVans.length === 0 && (
+          <div className="text-center py-16">
+            <Filter className="w-20 h-20 mx-auto text-gray-300 mb-4" />
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Nenhuma van encontrada
             </h3>
             <p className="text-gray-600 mb-6">
-              Tente ajustar os filtros ou fazer uma nova busca
+              Tente ajustar os filtros ou buscar por outra região.
             </p>
             <Button variant="primary" onClick={() => window.history.back()}>
               Voltar para Busca
@@ -159,6 +197,12 @@ const Busca = () => {
         isOpen={!!authModal}
         onClose={() => setAuthModal(null)}
         initialMode={authModal ?? undefined}
+      />
+
+      <RouteMapModal
+        van={routeVan}
+        isOpen={!!routeVan}
+        onClose={() => setRouteVan(null)}
       />
 
       <Footer />
