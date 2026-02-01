@@ -1,91 +1,68 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Filter, SlidersHorizontal } from "lucide-react";
+import { Filter, Search, Heart, Bell } from "lucide-react";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import SearchSection from "../components/features/SearchSection";
 import VanCard from "../components/features/VanCard";
 import VanDetailsModal from "../components/features/VanDetailsModal";
-import AuthModal from "../components/features/AuthModal";
+import RouteMapModal from "../components/features/RouteMapModal";
 import Button from "../components/common/Button";
 
-import type { AuthMode } from "../types";
 import type { Van } from "../types/Van";
-import RouteMapModal from "../components/features/RouteMapModal";
+import type { SearchFilters, AuthMode } from "../types";
+import { VANS_DATABASE } from "../utils/constants";
 
-const Busca = () => {
+interface BuscaPageProps {
+  onNavigate: (page: string) => void;
+  onOpenAuth: (mode: AuthMode) => void;
+}
+
+const Busca = ({ onNavigate, onOpenAuth }: BuscaPageProps) => {
   const location = useLocation();
+  const searchFilters = location.state?.filters;
 
-  /* =====================
-     Estados principais
-  ===================== */
-  const [routeVan, setRouteVan] = useState<Van | null>(null);
-  const [filteredVans, setFilteredVans] = useState<Van[]>([]);
+  useEffect(() => {
+    if (searchFilters) {
+      performSearch(searchFilters);
+    }
+  }, [searchFilters]);
+
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
+  const [selectedRouteVan, setSelectedRouteVan] = useState<Van | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
-  const [authModal, setAuthModal] = useState<AuthMode | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [filteredVans, setFilteredVans] = useState<Van[]>([]);
 
-  const filters = location.state?.filters || {};
+  const performSearch = (filters: SearchFilters) => {
+    let results = VANS_DATABASE;
 
-  /* =====================
-     Mock de vans
-     (substituir por API)
-  ===================== */
-
-  const vans: Van[] = [
-    {
-      id: 1,
-      nome: "Van Escolar Central",
-      prestador: "João Silva Transportes",
-      rota: "Centro → UNICENTRO (Campus Santa Cruz)",
-      horario: "Manhã: 06:30 | Tarde: 13:00",
-      vagas: 3,
-      avaliacao: 4.8,
-      totalAvaliacoes: 24,
-      telefone: "(42) 99999-0001",
-      email: "joao.van@email.com",
-    },
-  ];
-
-  /* =====================
-     Função de busca
-     (EXATAMENTE como pedido)
-  ===================== */
-
-  const performSearch = (filters: any) => {
-    let results = vans;
-
-    if (filters.origem) {
+    if (filters.origem && filters.origem.trim()) {
       results = results.filter((van) =>
-        van.rota.toLowerCase().includes(filters.origem.toLowerCase()),
+        van.origem?.toLowerCase().includes(filters.origem!.toLowerCase()),
       );
     }
 
-    if (filters.instituicao) {
+    if (filters.instituicao && filters.instituicao.trim()) {
       results = results.filter((van) =>
-        van.rota.toLowerCase().includes(filters.instituicao.toLowerCase()),
+        van.instituicao
+          ?.toLowerCase()
+          .includes(filters.instituicao!.toLowerCase()),
+      );
+    }
+
+    if (filters.periodo) {
+      results = results.filter((van) =>
+        van.horario.toLowerCase().includes(filters.periodo.toLowerCase()),
       );
     }
 
     setFilteredVans(results);
   };
 
-  /* =====================
-     Busca automática
-     ao entrar na página
-  ===================== */
-
-  useEffect(() => {
-    if (filters) {
-      performSearch(filters);
-    }
-  }, [filters]);
-
-  /* =====================
-     Favoritos
-  ===================== */
+  const handleSearch = (filters: SearchFilters) => {
+    performSearch(filters);
+  };
 
   const handleToggleFavorite = (vanId: number) => {
     setFavorites((prev) =>
@@ -95,91 +72,82 @@ const Busca = () => {
     );
   };
 
-  /* =====================
-     Render
-  ===================== */
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onOpenAuth={setAuthModal} />
+      <Header onOpenAuth={onOpenAuth} />
 
-      {/* 🔹 SearchSection NOVO */}
       <SearchSection
-        onSearch={performSearch}
-        showResultsCount
+        onSearch={handleSearch}
+        showResultsCount={true}
         resultsCount={filteredVans.length}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {filteredVans.length}{" "}
-            {filteredVans.length === 1 ? "van encontrada" : "vans encontradas"}
-          </h2>
-
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-          </Button>
-        </div>
-
-        {showFilters && (
-          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">Filtros Avançados</h3>
-            <div className="grid md:grid-cols-3 gap-4">
-              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                <option>Qualquer número de vagas</option>
-                <option>1+</option>
-                <option>2+</option>
-                <option>3+</option>
-              </select>
-
-              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                <option>Avaliação mínima</option>
-                <option>4.0+</option>
-                <option>4.5+</option>
-              </select>
-
-              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                <option>Ordenar por</option>
-                <option>Melhor avaliação</option>
-                <option>Mais vagas</option>
-              </select>
+        {filteredVans.length > 0 ? (
+          <>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">
+                  Vans Disponíveis
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {filteredVans.length}{" "}
+                  {filteredVans.length === 1
+                    ? "opção encontrada"
+                    : "opções encontradas"}
+                </p>
+              </div>
+              <button className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium border-2 border-purple-600 px-4 py-2 rounded-lg hover:bg-purple-50 transition">
+                <Filter className="w-5 h-5" />
+                Mais Filtros
+              </button>
             </div>
-          </div>
-        )}
 
-        {/* 🔹 Renderiza filteredVans */}
-        {filteredVans.length > 0 && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredVans.map((van) => (
-              <VanCard
-                key={van.id}
-                van={van}
-                onViewDetails={setSelectedVan}
-                onViewRoute={setRouteVan}
-                onToggleFavorite={handleToggleFavorite}
-                isFavorite={favorites.includes(van.id)}
-              />
-            ))}
-          </div>
-        )}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredVans.map((van) => (
+                <VanCard
+                  key={van.id}
+                  van={van}
+                  onViewDetails={(van) => setSelectedVan(van)}
+                  onViewRoute={(van) => setSelectedRouteVan(van)}
+                  onToggleFavorite={handleToggleFavorite}
+                  isFavorite={favorites.includes(van.id)}
+                />
+              ))}
+            </div>
 
-        {/* 🔹 Nenhuma van encontrada */}
-        {filteredVans.length === 0 && (
+            {favorites.length > 0 && (
+              <div className="mt-12 bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Heart className="w-6 h-6 text-red-500 fill-current" />
+                    Meus Favoritos ({favorites.length})
+                  </h3>
+                  <button className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1">
+                    <Bell className="w-4 h-4" />
+                    Ativar Notificações
+                  </button>
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Você será notificado quando houver vagas disponíveis nas vans
+                  que favoritou
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
           <div className="text-center py-16">
-            <Filter className="w-20 h-20 mx-auto text-gray-300 mb-4" />
+            <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="w-12 h-12 text-gray-400" />
+            </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Nenhuma van encontrada
             </h3>
-            <p className="text-gray-600 mb-6">
-              Tente ajustar os filtros ou buscar por outra região.
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Não encontramos vans que correspondam à sua busca. Tente ajustar
+              os filtros ou buscar por outras regiões.
             </p>
-            <Button variant="primary" onClick={() => window.history.back()}>
+            <Button variant="primary" onClick={() => onNavigate("home")}>
               Voltar para Busca
             </Button>
           </div>
@@ -190,21 +158,15 @@ const Busca = () => {
         van={selectedVan}
         isOpen={!!selectedVan}
         onClose={() => setSelectedVan(null)}
-        onAvaliar={() => {}}
+        onAvaliar={function (_van: Van): void {
+          throw new Error("Function not implemented.");
+        }}
       />
-
-      <AuthModal
-        isOpen={!!authModal}
-        onClose={() => setAuthModal(null)}
-        initialMode={authModal ?? undefined}
-      />
-
       <RouteMapModal
-        van={routeVan}
-        isOpen={!!routeVan}
-        onClose={() => setRouteVan(null)}
+        van={selectedRouteVan}
+        isOpen={!!selectedRouteVan}
+        onClose={() => setSelectedRouteVan(null)}
       />
-
       <Footer />
     </div>
   );

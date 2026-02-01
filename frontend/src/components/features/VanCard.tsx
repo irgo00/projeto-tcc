@@ -1,4 +1,13 @@
-import { MapPin, Clock, Users, Star, Heart, ChevronRight } from "lucide-react";
+import React from "react";
+import {
+  MapPin,
+  Clock,
+  Users,
+  Star,
+  Heart,
+  ChevronRight,
+  Map,
+} from "lucide-react";
 import Button from "../common/Button";
 import type { Van } from "../../types/Van";
 
@@ -10,16 +19,18 @@ interface VanCardProps {
   onToggleFavorite: (id: number) => void;
 }
 
-const VanCard = ({
+// ============================================================
+// 🔧 MODIFICADO: Adicionada prop onViewRoute
+// Antes: ({ van, onViewDetails, onToggleFavorite, isFavorite })
+// Agora: ({ van, onViewDetails, onViewRoute, onToggleFavorite, isFavorite })
+// ============================================================
+const VanCard: React.FC<VanCardProps> = ({
   van,
   onViewDetails,
+  onViewRoute,
   onToggleFavorite,
   isFavorite,
-}: VanCardProps) => {
-  function onViewRoute(_van: Van): void {
-    throw new Error("Function not implemented.");
-  }
-
+}) => {
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-100">
       <div className="flex justify-between items-start mb-4">
@@ -29,9 +40,7 @@ const VanCard = ({
         </div>
         <button
           onClick={() => onToggleFavorite(van.id)}
-          className={`transition-colors ${
-            isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
-          }`}
+          className={`transition-colors ${isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}`}
         >
           <Heart className={`w-6 h-6 ${isFavorite ? "fill-current" : ""}`} />
         </button>
@@ -39,11 +48,11 @@ const VanCard = ({
 
       <div className="space-y-3 mb-6">
         <div className="flex items-start text-gray-700">
-          <MapPin className="w-4 h-4 mr-2 text-purple-600 mt-0.5 shrink-0" />
+          <MapPin className="w-4 h-4 mr-2 text-purple-600 mt-0.5 flex-shrink-0" />
           <span className="text-sm">{van.rota}</span>
         </div>
         <div className="flex items-center text-gray-700">
-          <Clock className="w-4 h-4 mr-2 text-purple-600 shrink-0" />
+          <Clock className="w-4 h-4 mr-2 text-purple-600 flex-shrink-0" />
           <span className="text-sm">{van.horario}</span>
         </div>
         <div className="flex items-center justify-between">
@@ -63,24 +72,27 @@ const VanCard = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-
-      <Button
-        variant="outline"
-        onClick={() => onViewRoute(van)}
-        className="flex items-center justify-center gap-2"
-      >
-        Ver Rota
-      </Button>
-
-      <Button
-        variant="primary"
-        onClick={() => onViewDetails(van)}
-        className="flex items-center justify-center gap-2"
-      >
-        Detalhes
-        <ChevronRight className="w-4 h-4" />
-      </Button>
+      {/* 🔧 MODIFICADO: Antes tinha apenas um botão "Ver Detalhes"
+          Agora tem dois botões lado a lado em um grid */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* 🆕 NOVO: Botão Ver Rota */}
+        <Button
+          variant="outline"
+          onClick={() => onViewRoute(van)}
+          className="flex items-center justify-center gap-1 text-sm"
+        >
+          <Map className="w-4 h-4" />
+          Ver Rota
+        </Button>
+        {/* Botão Detalhes (antes era o único, agora adaptado para o grid) */}
+        <Button
+          variant="primary"
+          onClick={() => onViewDetails(van)}
+          className="flex items-center justify-center gap-1 text-sm"
+        >
+          Detalhes
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );

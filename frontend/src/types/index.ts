@@ -21,3 +21,9 @@ export interface Van {
   telefone?: string;
   email?: string;
 }
+
+export interface SearchFilters {
+  periodo: any;
+  origem?: string;
+  instituicao?: string;
+}

@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-
-type AuthMode = 'login' | 'cadastro';
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import type { AuthMode } from "../../types";
 
 interface HeaderProps {
   onOpenAuth: (mode: AuthMode) => void;
@@ -16,23 +15,39 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
     setMenuOpen(false);
   };
 
   const goHome = () => {
-    navigate('/');
+    navigate("/");
     setMenuOpen(false);
+    document.getElementById("busca")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const goToComoFunciona = () => {
+    navigate("/");
+    setTimeout(() => {
+      document
+        .getElementById("como-funciona")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  const goToContato = () => {
+    navigate("/");
+    setTimeout(() => {
+      document
+        .getElementById("contato")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={goHome}
-          >
+          <div className="flex items-center cursor-pointer" onClick={goHome}>
             <h1 className="text-2xl font-bold text-purple-600">PBTE</h1>
             <span className="ml-2 text-sm text-gray-500 hidden sm:block">
               Transporte Escolar
@@ -40,15 +55,24 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <button onClick={goHome} className="text-gray-700 hover:text-purple-600">
+            <button
+              onClick={goHome}
+              className="text-gray-700 hover:text-purple-600"
+            >
               Início
             </button>
-            <a href="#como-funciona" className="text-gray-700 hover:text-purple-600">
+            <button
+              onClick={goToComoFunciona}
+              className="text-gray-700 hover:text-purple-600"
+            >
               Como Funciona
-            </a>
-            <a href="#contato" className="text-gray-700 hover:text-purple-600">
+            </button>
+            <button
+              onClick={goToContato}
+              className="text-gray-700 hover:text-purple-600"
+            >
               Contato
-            </a>
+            </button>
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -57,9 +81,9 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
                 <button
                   onClick={() =>
                     navigate(
-                      user.tipo === 'prestador'
-                        ? '/dashboard/prestador'
-                        : '/dashboard/cliente'
+                      user.tipo === "prestador"
+                        ? "/dashboard/prestador"
+                        : "/dashboard/cliente",
                     )
                   }
                   className="text-purple-600 font-medium"
@@ -68,7 +92,7 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
                 </button>
 
                 <button
-                  onClick={() => navigate('/perfil')}
+                  onClick={() => navigate("/perfil")}
                   className="text-gray-700 hover:text-purple-600"
                 >
                   Perfil
@@ -84,13 +108,13 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
             ) : (
               <>
                 <button
-                  onClick={() => onOpenAuth('login')}
+                  onClick={() => onOpenAuth("login")}
                   className="text-purple-600 font-medium"
                 >
                   Entrar
                 </button>
                 <button
-                  onClick={() => onOpenAuth('cadastro')}
+                  onClick={() => onOpenAuth("cadastro")}
                   className="bg-purple-600 text-white px-6 py-2 rounded-lg"
                 >
                   Cadastrar
@@ -123,9 +147,9 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
                 <button
                   onClick={() =>
                     navigate(
-                      user.tipo === 'prestador'
-                        ? '/dashboard/prestador'
-                        : '/dashboard/cliente'
+                      user.tipo === "prestador"
+                        ? "/dashboard/prestador"
+                        : "/dashboard/cliente",
                     )
                   }
                   className="block text-purple-600 font-medium"
@@ -141,7 +165,7 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
               <>
                 <button
                   onClick={() => {
-                    onOpenAuth('login');
+                    onOpenAuth("login");
                     setMenuOpen(false);
                   }}
                   className="block text-purple-600 font-medium"
@@ -151,7 +175,7 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
 
                 <button
                   onClick={() => {
-                    onOpenAuth('cadastro');
+                    onOpenAuth("cadastro");
                     setMenuOpen(false);
                   }}
                   className="block bg-purple-600 text-white px-6 py-2 rounded-lg"

@@ -1,8 +1,9 @@
 import { Bell, Heart, MapPin, Phone, Search, Star, UserPlus, History } from 'lucide-react';
 import Button from '../common/Button';
+import type { AuthMode } from '../../types';
 
 interface ComoFuncionaSectionProps {
-  onOpenAuth: (type: string) => void;
+  onOpenAuth: (mode: AuthMode) => void;
 }
 
 const ComoFuncionaSection = ({ onOpenAuth }: ComoFuncionaSectionProps) => {

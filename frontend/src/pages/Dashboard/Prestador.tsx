@@ -6,7 +6,12 @@ import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
 
-const DashboardPrestador = () => {
+interface DashboardPrestadorProps {
+  onNavigate: (page: string, filters?: unknown) => void;
+  onOpenAuth: () => void;
+}
+
+function DashboardPrestador({  }: DashboardPrestadorProps) {
   const [activeTab, setActiveTab] = useState('rotas');
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import type { Van } from '../../components/features/VanCard';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import VanCard from '../../components/features/VanCard';
 import VanDetailsModal from '../../components/features/VanDetailsModal';
 import { Heart, Bell, History, Star } from 'lucide-react';
+import type { Van } from '../../types/Van';
 
 const DashboardCliente = () => {
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
@@ -106,9 +106,10 @@ const DashboardCliente = () => {
                         key={van.id}
                         van={van}
                         onViewDetails={setSelectedVan}
-                        onToggleFavorite={() => {}}
-                        isFavorite={true}
-                      />
+                        onToggleFavorite={() => { } }
+                        isFavorite={true} onViewRoute={function (_van: Van): void {
+                          throw new Error('Function not implemented.');
+                        } }                      />
                     ))}
                   </div>
                 ) : (

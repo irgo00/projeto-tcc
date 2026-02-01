@@ -1,15 +1,16 @@
-import { Mail, MapPin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Mail, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white py-12 mt-20">
+    <footer id="contato" className="bg-gray-900 text-white py-12 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="text-2xl font-bold text-purple-400 mb-4">PBTE</h3>
             <p className="text-gray-400 text-sm">
-              Conectando estudantes aos melhores serviços de transporte escolar em Irati-PR
+              Conectando estudantes aos melhores serviços de transporte escolar
+              em Irati-PR
             </p>
           </div>
 
@@ -22,7 +23,10 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#como-funciona" className="hover:text-white transition">
+                <a
+                  href="#como-funciona"
+                  className="hover:text-white transition"
+                >
                   Como Funciona
                 </a>
               </li>
@@ -72,7 +76,8 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 pt-8 text-center">
           <p className="text-gray-500 text-sm">
-            © 2025 PBTE - Plataforma de Busca de Transporte Escolar. Todos os direitos reservados.
+            © 2025 PBTE - Plataforma de Busca de Transporte Escolar. Todos os
+            direitos reservados.
           </p>
           <p className="text-gray-600 text-xs mt-2">
             Desenvolvido como TCC - Instituto Federal do Paraná

@@ -3,9 +3,7 @@ import Modal from "../common/Modal";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { useAuth } from "../../hooks/useAuth";
-
-/* ---------- TIPOS ---------- */
-type AuthMode = "login" | "cadastro";
+import type { AuthMode } from "../../types";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -31,7 +29,7 @@ const AuthModal = ({
   onClose,
   initialMode = "login",
 }: AuthModalProps) => {
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [mode, setMode] = useState<AuthMode>(initialMode ?? "login");
   const [formData, setFormData] = useState<FormData>({
     nome: "",
     email: "",
@@ -52,7 +50,7 @@ const AuthModal = ({
      SINCRONIZA O MODO
   ===================== */
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && initialMode) {
       setMode(initialMode);
     }
   }, [isOpen, initialMode]);
@@ -257,11 +255,12 @@ const AuthModal = ({
           error={errors.senha}
           required
         />
-        {!errors.senha && (
-              <p className="text-sm text-gray-500 -mt-2">
-                É necessário no mínimo 8 caracteres.
-              </p>
-            )}
+
+        {!isLogin && !errors.senha && (
+          <p className="text-sm text-gray-500 -mt-2">
+            É necessário no mínimo 8 caracteres.
+          </p>
+        )}
 
         {!isLogin && (
           <Input

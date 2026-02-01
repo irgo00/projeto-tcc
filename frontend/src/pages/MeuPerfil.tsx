@@ -6,7 +6,12 @@ import Button from "../components/common/Button";
 import Input from "../components/common/Input";
 import { useAuth } from "../hooks/useAuth";
 
-const MeuPerfil = () => {
+interface MeuPerfilProps {
+  onNavigate: (page: string, filters?: unknown) => void;
+  onOpenAuth: () => void;
+}
+
+function MeuPerfil({ onOpenAuth }: MeuPerfilProps) {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,7 +39,7 @@ const MeuPerfil = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onOpenAuth={() => {}} />
+      <Header onOpenAuth={onOpenAuth} />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -170,5 +175,6 @@ const MeuPerfil = () => {
       <Footer />
     </div>
   );
-};
+}
+
 export default MeuPerfil;
