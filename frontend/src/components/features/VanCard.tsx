@@ -51,9 +51,15 @@ const VanCard: React.FC<VanCardProps> = ({
           <MapPin className="w-4 h-4 mr-2 text-purple-600 mt-0.5 flex-shrink-0" />
           <span className="text-sm">{van.rota}</span>
         </div>
-        <div className="flex items-center text-gray-700">
-          <Clock className="w-4 h-4 mr-2 text-purple-600 flex-shrink-0" />
-          <span className="text-sm">{van.horario}</span>
+        <div className="flex items-start text-gray-700">
+          <Clock className="w-4 h-4 mr-2 text-purple-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm flex flex-col">
+            {Object.entries(van.horario).map(([periodo, hora]) => (
+              <span key={periodo}>
+                <strong className="capitalize">{periodo}:</strong> {hora}
+              </span>
+            ))}
+          </div>
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center text-gray-700">

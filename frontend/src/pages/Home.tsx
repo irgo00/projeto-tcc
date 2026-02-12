@@ -6,7 +6,6 @@ import type { SearchFilters, AuthMode } from "../types";
 import { useNavigate } from "react-router-dom";
 
 interface HomePageProps {
-  onNavigate: (page: string, filters?: SearchFilters) => void;
   onOpenAuth: (mode: AuthMode) => void;
 }
 

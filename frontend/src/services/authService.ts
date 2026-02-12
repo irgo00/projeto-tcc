@@ -1,78 +1,95 @@
-import api from './api';
-import type { User } from '../types';
-import type { AxiosError } from 'axios';
+import api from "./api";
+import type { User } from "../types";
+import type { AxiosError } from "axios";
 
-interface AuthResponse {
+export interface AuthResponse {
+  success: boolean;
   token: string;
   user: User;
+  message?: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  senha: string;
 }
 
 export const authService = {
-  login: async (email: string, senha: string): Promise<AuthResponse> => {
+  async login({
+    email,
+    senha,
+  }: LoginCredentials): Promise<{ user: User; token: string }> {
     try {
-      const response = await api.post<AuthResponse>('/login', { email, senha });
+      const response = await api.post<AuthResponse>("/login", { email, senha });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Email ou senha inválidos");
+      }
+
       const { token, user } = response.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      return { token, user };
+      return { user, token };
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
-      throw new Error(err.response?.data?.message || 'Erro ao fazer login');
+      throw new Error(err.response?.data?.message || "Erro ao fazer login");
     }
   },
 
-  register: async (userData: Partial<User>): Promise<AuthResponse> => {
+  async register(
+    userData: Partial<User>,
+  ): Promise<{ user: User; token: string }> {
     try {
-      const response = await api.post<AuthResponse>('/register', userData);
+      const response = await api.post<AuthResponse>("/register", userData);
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Erro ao cadastrar");
+      }
+
       const { token, user } = response.data;
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      return { token, user };
+      return { user, token };
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
-      throw new Error(err.response?.data?.message || 'Erro ao criar conta');
+      throw new Error(err.response?.data?.message || "Erro ao criar conta");
     }
   },
 
-  logout: (): void => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  },
-
-  getCurrentUser: (): User | null => {
-    const userStr = localStorage.getItem('user');
-    return userStr ? (JSON.parse(userStr) as User) : null;
-  },
-
-  isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('token');
-  },
-
-  updateProfile: async (userData: Partial<User>): Promise<User> => {
+  async logout(): Promise<void> {
     try {
-      const response = await api.put<{ user: User }>('/profile', userData);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      return response.data.user;
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      throw new Error(err.response?.data?.message || 'Erro ao atualizar perfil');
+      await api.post("/logout");
+    } catch {
+      // ignora erro
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     }
   },
 
-  changePassword: async (senhaAtual: string, novaSenha: string): Promise<void> => {
+  async getCurrentUser(): Promise<User | null> {
+    if (!localStorage.getItem("token")) return null;
+
     try {
-      await api.post('/change-password', {
-        senha_atual: senhaAtual,
-        nova_senha: novaSenha,
-      });
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      throw new Error(err.response?.data?.message || 'Erro ao alterar senha');
+      const response = await api.get<{ success: boolean; user: User }>("/me");
+      return response.data.success ? response.data.user : null;
+    } catch {
+      return null;
     }
+  },
+
+  getStoredUser(): User | null {
+    const userStr = localStorage.getItem("user");
+    return userStr ? JSON.parse(userStr) : null;
+  },
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem("token");
   },
 };
+
 export default authService;

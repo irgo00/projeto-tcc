@@ -1,6 +1,12 @@
-import { createContext, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
 import { authService } from "../services/authService";
-import type { User } from '../types';
+import type { User } from "../types";
 
 interface AuthContextData {
   user: User | null;
@@ -12,42 +18,38 @@ interface AuthContextData {
   isAuthenticated: boolean;
 }
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-/* =====================
-   Context
-===================== */
-
 export const AuthContext = createContext<AuthContextData | null>(null);
 
-/* =====================
-   Provider
-===================== */
-
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
-    const loadUser = () => {
-      const currentUser = authService.getCurrentUser();
-      setUser(currentUser);
-      setLoading(false);
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+
+    const loadUser = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadUser();
   }, []);
-
-  const login = async (email: string, senha: string): Promise<User> => {
-    const { user } = await authService.login(email, senha);
+  const login = async (email: string, senha: string) => {
+    const { user } = await authService.login({ email, senha });
     setUser(user);
     return user;
   };
 
-  const register = async (userData: Partial<User>): Promise<User> => {
-    const { user } = await authService.register(userData);
+  const register = async (data: Partial<User>) => {
+    const { user } = await authService.register(data);
     setUser(user);
     return user;
   };
@@ -55,10 +57,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = () => {
     authService.logout();
     setUser(null);
-  };
-
-  const updateUser = (userData: User) => {
-    setUser(userData);
   };
 
   return (
@@ -69,7 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         login,
         register,
         logout,
-        updateUser,
+        updateUser: setUser,
         isAuthenticated: !!user,
       }}
     >

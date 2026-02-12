@@ -6,16 +6,10 @@ import Home from "./pages/Home";
 import Busca from "./pages/Busca";
 import AuthModal from "./components/features/AuthModal";
 
-import type { AuthMode, SearchFilters } from "./types";
+import type { AuthMode } from "./types";
 
 function App() {
   const [authModal, setAuthModal] = useState<AuthMode | null>(null);
-
-  const handleNavigate = (page: string, filters?: SearchFilters) => {
-    if (page === "busca" && filters) {
-      window.location.href = `/busca?filters=${JSON.stringify(filters)}`;
-    }
-  };
 
   return (
     <AuthProvider>
@@ -23,13 +17,13 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={
-              <Home onNavigate={handleNavigate} onOpenAuth={setAuthModal} />
-            }
+            element={<Home onOpenAuth={setAuthModal} />}
           />
-          <Route path="/busca" element={<Busca onOpenAuth={setAuthModal} onNavigate={function (_page: string): void {
-            throw new Error("Function not implemented.");
-          } } />} />
+
+          <Route
+            path="/busca"
+            element={<Busca onOpenAuth={setAuthModal} />}
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

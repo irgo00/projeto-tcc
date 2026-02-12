@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Filter, Search, Heart, Bell } from "lucide-react";
 
 import Header from "../components/layout/Header";
@@ -12,52 +12,35 @@ import Button from "../components/common/Button";
 
 import type { Van } from "../types/Van";
 import type { SearchFilters, AuthMode } from "../types";
-import { VANS_DATABASE } from "../utils/constants";
+import api from "../services/api";
 
 interface BuscaPageProps {
-  onNavigate: (page: string) => void;
   onOpenAuth: (mode: AuthMode) => void;
 }
 
-const Busca = ({ onNavigate, onOpenAuth }: BuscaPageProps) => {
+const Busca = ({ onOpenAuth }: BuscaPageProps) => {
   const location = useLocation();
-  const searchFilters = location.state?.filters;
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (searchFilters) {
-      performSearch(searchFilters);
-    }
-  }, [searchFilters]);
+  const searchFilters = location.state?.filters;
 
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
   const [selectedRouteVan, setSelectedRouteVan] = useState<Van | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [filteredVans, setFilteredVans] = useState<Van[]>([]);
 
-  const performSearch = (filters: SearchFilters) => {
-    let results = VANS_DATABASE;
-
-    if (filters.origem && filters.origem.trim()) {
-      results = results.filter((van) =>
-        van.origem?.toLowerCase().includes(filters.origem!.toLowerCase()),
-      );
+  useEffect(() => {
+    if (!searchFilters) {
+      navigate("/");
+      return;
     }
 
-    if (filters.instituicao && filters.instituicao.trim()) {
-      results = results.filter((van) =>
-        van.instituicao
-          ?.toLowerCase()
-          .includes(filters.instituicao!.toLowerCase()),
-      );
-    }
+    performSearch(searchFilters);
+  }, [searchFilters]);
 
-    if (filters.periodo) {
-      results = results.filter((van) =>
-        van.horario.toLowerCase().includes(filters.periodo.toLowerCase()),
-      );
-    }
-
-    setFilteredVans(results);
+  const performSearch = async (filters: SearchFilters) => {
+    const response = await api.post("/vans/buscar", filters);
+    setFilteredVans(response.data.vans);
   };
 
   const handleSearch = (filters: SearchFilters) => {
@@ -147,7 +130,7 @@ const Busca = ({ onNavigate, onOpenAuth }: BuscaPageProps) => {
               Não encontramos vans que correspondam à sua busca. Tente ajustar
               os filtros ou buscar por outras regiões.
             </p>
-            <Button variant="primary" onClick={() => onNavigate("home")}>
+            <Button variant="primary" onClick={() => navigate("/")}>
               Voltar para Busca
             </Button>
           </div>
