@@ -1,0 +1,62 @@
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.*
+.env.backup
+.env.production
+
+# =========================
+# Dependencies
+# =========================
+/vendor/
+/node_modules/
+
+# =========================
+# Laravel build / runtime
+# =========================
+/public/build/
+/public/hot/
+/public/storage/
+/storage/*.key
+/storage/pail/
+/storage/framework/
+/storage/logs/
+
+# =========================
+# Cache / Test
+# =========================
+.phpunit.result.cache
+/.phpunit.cache
+.phpactor.json
+
+# =========================
+# IDEs / Editors
+# =========================
+/.vscode/
+.idea/
+/.fleet/
+/.zed/
+/.nova/
+
+# =========================
+# Auth / secrets
+# =========================
+/auth.json
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Laravel Homestead
+# =========================
+Homestead.json
+Homestead.yaml
