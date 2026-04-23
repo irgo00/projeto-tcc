@@ -2,10 +2,12 @@ import api from "./api";
 import type { Avaliacao } from "../types/Avaliacao";
 
 export const avaliacaoService = {
-  criar: async (
-    avaliacaoData: Omit<Avaliacao, "id" | "createdAt">
-  ): Promise<Avaliacao> => {
-    const response = await api.post("/avaliacoes", avaliacaoData);
+  criar: async ({
+    vanId,
+    nota,
+    comentario,
+  }: Pick<Avaliacao, "vanId" | "nota" | "comentario">): Promise<Avaliacao> => {
+    const response = await api.post("/avaliacoes", { van_id: vanId, nota, comentario });
     return response.data;
   },
 

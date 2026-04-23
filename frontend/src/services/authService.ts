@@ -39,10 +39,12 @@ export const authService = {
   },
 
   async register(
-    userData: Partial<User>,
+    userData: Partial<User> & { dataNascimento?: string; senha?: string; confirmarSenha?: string },
   ): Promise<{ user: User; token: string }> {
     try {
-      const response = await api.post<AuthResponse>("/register", userData);
+      const { dataNascimento, confirmarSenha, ...rest } = userData;
+      const payload = { ...rest, ...(dataNascimento && { data_nascimento: dataNascimento }) };
+      const response = await api.post<AuthResponse>("/register", payload);
 
       if (!response.data.success) {
         throw new Error(response.data.message || "Erro ao cadastrar");

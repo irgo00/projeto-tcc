@@ -92,10 +92,7 @@ class AvaliacaoController extends Controller
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'avaliacoes' => $avaliacoes
-        ]);
+        return response()->json($avaliacoes);
     }
 
     /**
@@ -117,9 +114,6 @@ class AvaliacaoController extends Controller
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'avaliacoes' => $avaliacoes
-        ]);
+        return response()->json($avaliacoes);
     }
 }

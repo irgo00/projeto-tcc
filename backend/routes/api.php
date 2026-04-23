@@ -8,6 +8,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/vans', [VanController::class, 'index']);
 Route::post('/vans/buscar', [VanController::class, 'buscar']);
+Route::get('/vans/minhas', [VanController::class, 'minhas'])->middleware('auth:api');
 Route::get('/vans/{id}', [VanController::class, 'show']);
 Route::get('/avaliacoes/van/{vanId}', [AvaliacaoController::class, 'porVan']);
 Route::get('/debug/vans', function () {
@@ -24,7 +25,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/vans', [VanController::class, 'store']);
     Route::put('/vans/{id}', [VanController::class, 'update']);
     Route::delete('/vans/{id}', [VanController::class, 'destroy']);
-    Route::get('/vans/minhas', [VanController::class, 'minhas']);
 
     Route::post('/avaliacoes', [AvaliacaoController::class, 'store']);
     Route::get('/avaliacoes/minhas', [AvaliacaoController::class, 'minhas']);

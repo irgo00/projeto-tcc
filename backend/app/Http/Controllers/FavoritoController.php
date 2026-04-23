@@ -34,10 +34,7 @@ class FavoritoController extends Controller
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'favoritos' => $favoritos
-        ]);
+        return response()->json($favoritos);
     }
 
     /**
