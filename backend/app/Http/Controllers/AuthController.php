@@ -11,9 +11,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    /**
-     * Registro de novo usuário
-     */
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -25,7 +23,7 @@ class AuthController extends Controller
             'senha' => 'required|string|min:8',
             'tipo' => 'required|in:cliente,prestador',
         ], [
-            'data_nascimento.before' => 'É necessário ter pelo menos ' . config('app.min_age', 13) . ' anos para criar uma conta.',
+            'data_nascimento.before' => 'É necessário ter pelo menos 13 anos para criar uma conta.',
             'cpf.size' => 'CPF inválido.',
             'cpf.unique' => 'Este CPF já está cadastrado.',
             'email.unique' => 'Este email já está cadastrado.',
@@ -38,7 +36,6 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Validar CPF
         if (!$this->validarCPF($request->cpf)) {
             return response()->json([
                 'success' => false,
@@ -73,9 +70,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /**
-     * Login de usuário
-     */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -119,9 +113,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Logout de usuário
-     */
     public function logout()
     {
         JWTAuth::invalidate(JWTAuth::getToken());
@@ -132,9 +123,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Obter dados do usuário autenticado
-     */
     public function me()
     {
         /** @var \App\Models\User $user */
@@ -154,9 +142,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Atualizar perfil do usuário
-     */
     public function updateProfile(Request $request)
     {
         /** @var \App\Models\User $user */
@@ -191,9 +176,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Alterar senha
-     */
     public function changePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -227,9 +209,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Validar CPF
-     */
     private function validarCPF($cpf)
     {
         $cpf = preg_replace('/[^0-9]/', '', $cpf);

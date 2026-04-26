@@ -57,8 +57,23 @@ export const authService = {
 
       return { user, token };
     } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      throw new Error(err.response?.data?.message || "Erro ao criar conta");
+      const err = error as AxiosError<any>;
+
+      const data = err.response?.data;
+
+      if (data?.errors) {
+        const messages = Object.values(data.errors)
+          .flat()
+          .join("\n");
+
+        throw new Error(messages);
+      }
+
+      if (data?.message) {
+        throw new Error(data.message);
+      }
+
+      throw new Error("Erro ao criar conta");
     }
   },
 
