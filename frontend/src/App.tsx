@@ -4,6 +4,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 
 import Home from "./pages/Home";
 import Busca from "./pages/Busca";
+import MeuPerfil from "./pages/MeuPerfil";
 import AuthModal from "./components/features/AuthModal";
 
 import type { AuthMode } from "./types";
@@ -23,6 +24,11 @@ function App() {
           <Route
             path="/busca"
             element={<Busca onOpenAuth={setAuthModal} />}
+          />
+
+          <Route
+            path="/perfil"
+            element={<MeuPerfil onOpenAuth={setAuthModal} />}
           />
 
           <Route path="*" element={<Navigate to="/" replace />} />
