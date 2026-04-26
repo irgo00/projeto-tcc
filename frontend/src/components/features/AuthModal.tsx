@@ -41,6 +41,7 @@ const AuthModal = ({
     tipo: "cliente",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
 
@@ -118,6 +119,7 @@ const AuthModal = ({
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
+    setLoading(true);
     try {
       if (isLogin) {
         await login(formData.email, formData.senha);
@@ -129,6 +131,8 @@ const AuthModal = ({
       const message =
         error instanceof Error ? error.message : "Erro ao processar requisição";
       setErrors({ submit: message });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -284,6 +288,7 @@ const AuthModal = ({
           variant="primary"
           size="lg"
           onClick={handleSubmit}
+          loading={loading}
           className="w-full"
         >
           {isLogin ? "Entrar" : "Cadastrar"}
