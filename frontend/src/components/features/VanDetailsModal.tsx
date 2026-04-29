@@ -18,6 +18,9 @@ const VanDetailsModal = ({
 }: VanDetailsModalProps) => {
   if (!van) return null;
 
+  const avaliacao = Number(van.avaliacao) || 0;
+  const horarios = Object.entries(van.horario ?? {});
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
       <div>
@@ -41,7 +44,17 @@ const VanDetailsModal = ({
                 <Clock className="w-5 h-5 mr-2 text-purple-600" />
                 Horários
               </h3>
-              <p className="text-gray-700 ml-7 text-sm">{van.horario}</p>
+              <div className="text-gray-700 ml-7 text-sm space-y-1">
+                {horarios.length > 0 ? (
+                  horarios.map(([periodo, hora]) => (
+                    <p key={periodo}>
+                      <span className="capitalize">{periodo}:</span> {hora}
+                    </p>
+                  ))
+                ) : (
+                  <p>Horário não informado</p>
+                )}
+              </div>
             </div>
 
             <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
@@ -86,7 +99,7 @@ const VanDetailsModal = ({
 
             <div className="flex items-center mb-4">
               <span className="text-4xl font-bold text-gray-900">
-                {van.avaliacao.toFixed(1)}
+                {avaliacao.toFixed(1)}
               </span>
 
               <div className="ml-4">
@@ -95,7 +108,7 @@ const VanDetailsModal = ({
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
-                        i <= Math.round(van.avaliacao)
+                        i <= Math.round(avaliacao)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
