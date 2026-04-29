@@ -141,9 +141,7 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
         van={selectedVan}
         isOpen={!!selectedVan}
         onClose={() => setSelectedVan(null)}
-        onAvaliar={function (_van: Van): void {
-          throw new Error("Function not implemented.");
-        }}
+        onAvaliar={() => {}}
       />
       <RouteMapModal
         van={selectedRouteVan}
