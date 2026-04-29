@@ -9,9 +9,12 @@ Route::get('/vans', [VanController::class, 'index']);
 Route::post('/vans/buscar', [VanController::class, 'buscar']);
 Route::get('/vans/{id}', [VanController::class, 'show']);
 Route::get('/avaliacoes/van/{vanId}', [AvaliacaoController::class, 'porVan']);
-Route::get('/debug/vans', function () {
-    return \App\Models\Van::all();
-});
+
+if (app()->environment('local')) {
+    Route::get('/debug/vans', function () {
+        return \App\Models\Van::all();
+    });
+}
 
 // Autenticadas
 Route::middleware(['auth:api'])->group(function () {
