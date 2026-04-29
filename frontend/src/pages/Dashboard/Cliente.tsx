@@ -16,7 +16,7 @@ const DashboardCliente = () => {
       nome: 'Van Escolar Central',
       prestador: 'João Silva Transportes',
       rota: 'Centro → UNICENTRO',
-      horario: 'Manhã: 06:30',
+      horario: { manha: '06:30' },
       vagas: 3,
       avaliacao: 4.8,
       totalAvaliacoes: 24,
@@ -106,10 +106,10 @@ const DashboardCliente = () => {
                         key={van.id}
                         van={van}
                         onViewDetails={setSelectedVan}
-                        onToggleFavorite={() => { } }
-                        isFavorite={true} onViewRoute={function (_van: Van): void {
-                          throw new Error('Function not implemented.');
-                        } }                      />
+                        onToggleFavorite={() => {}}
+                        isFavorite={true}
+                        onViewRoute={() => {}}
+                      />
                     ))}
                   </div>
                 ) : (
