@@ -5,8 +5,13 @@ import VanCard from '../../components/features/VanCard';
 import VanDetailsModal from '../../components/features/VanDetailsModal';
 import { Heart, Bell, History, Star } from 'lucide-react';
 import type { Van } from '../../types/Van';
+import type { AuthMode } from '../../types';
 
-const DashboardCliente = () => {
+interface DashboardClienteProps {
+  onOpenAuth: (mode: AuthMode) => void;
+}
+
+const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
   const [activeTab, setActiveTab] = useState('favoritos');
 
@@ -37,7 +42,7 @@ const DashboardCliente = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onOpenAuth={() => {}} />
+      <Header onOpenAuth={onOpenAuth} />
 
       <div className="bg-linear-to-r from-purple-600 to-purple-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

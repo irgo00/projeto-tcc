@@ -5,6 +5,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Home from "./pages/Home";
 import Busca from "./pages/Busca";
 import MeuPerfil from "./pages/MeuPerfil";
+import DashboardCliente from "./pages/Dashboard/Cliente";
+import DashboardPrestador from "./pages/Dashboard/Prestador";
 import AuthModal from "./components/features/AuthModal";
 
 import type { AuthMode } from "./types";
@@ -29,6 +31,16 @@ function App() {
           <Route
             path="/perfil"
             element={<MeuPerfil onOpenAuth={setAuthModal} />}
+          />
+
+          <Route
+            path="/dashboard/cliente"
+            element={<DashboardCliente onOpenAuth={setAuthModal} />}
+          />
+
+          <Route
+            path="/dashboard/prestador"
+            element={<DashboardPrestador onOpenAuth={setAuthModal} />}
           />
 
           <Route path="*" element={<Navigate to="/" replace />} />

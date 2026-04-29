@@ -44,6 +44,20 @@ export const validateSenha = (senha: string): string | null => {
   return null;
 };
 
+export const formatMoeda = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  const num = parseInt(digits, 10);
+  const reais = Math.floor(num / 100);
+  const centavos = num % 100;
+  const reaisFormatado = reais.toLocaleString('pt-BR');
+  return `${reaisFormatado},${String(centavos).padStart(2, '0')}`;
+};
+
+export const parseMoeda = (value: string): number => {
+  return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+};
+
 // Validar CPF
 export const isValidCPF = (cpf: string): boolean => {
   cpf = cpf.replace(/\D/g, "");

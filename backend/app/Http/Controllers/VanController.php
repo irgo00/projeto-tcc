@@ -263,20 +263,28 @@ class VanController extends Controller
         }
 
         $vans = Van::where('prestador_id', auth()->id())
-            ->withTrashed()
             ->get()
             ->map(function ($van) {
                 return [
-                    'id'               => $van->id,
-                    'nome'             => $van->nome,
-                    'rota'             => $van->rota,
-                    'horario'          => $van->horario_formatado,
-                    'vagas_totais'     => $van->vagas_totais,
+                    'id'                => $van->id,
+                    'nome'              => $van->nome,
+                    'origem'            => $van->origem,
+                    'destino'           => $van->destino,
+                    'instituicao'       => $van->instituicao,
+                    'rota'              => $van->rota,
+                    'horario'           => $van->horario_formatado,
+                    'horario_manha'     => $van->horario_manha,
+                    'horario_tarde'     => $van->horario_tarde,
+                    'horario_noite'     => $van->horario_noite,
+                    'vagas_totais'      => $van->vagas_totais,
                     'vagas_disponiveis' => $van->vagas_disponiveis,
-                    'avaliacao'        => $van->avaliacao_media,
-                    'total_avaliacoes' => $van->total_avaliacoes,
-                    'ativa'            => $van->ativa && !$van->deleted_at,
-                    'created_at'       => $van->created_at->format('d/m/Y'),
+                    'valor_mensal'      => $van->valor_mensal,
+                    'telefone'          => $van->telefone,
+                    'email'             => $van->email,
+                    'avaliacao'         => $van->avaliacao_media,
+                    'totalAvaliacoes'   => $van->total_avaliacoes,
+                    'ativa'             => (bool) $van->ativa && !$van->deleted_at,
+                    'criadoEm'          => $van->created_at->format('d/m/Y'),
                 ];
             });
 

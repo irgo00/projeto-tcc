@@ -41,7 +41,13 @@ const VanDetailsModal = ({
                 <Clock className="w-5 h-5 mr-2 text-purple-600" />
                 Horários
               </h3>
-              <p className="text-gray-700 ml-7 text-sm">{van.horario}</p>
+              <div className="ml-7 text-sm text-gray-700 space-y-1">
+                {Object.entries(van.horario).map(([periodo, hora]) => (
+                  <p key={periodo}>
+                    <strong className="capitalize">{periodo}:</strong> {hora}
+                  </p>
+                ))}
+              </div>
             </div>
 
             <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
