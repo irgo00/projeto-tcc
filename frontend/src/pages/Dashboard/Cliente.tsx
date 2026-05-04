@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import VanCard from '../../components/features/VanCard';
 import VanDetailsModal from '../../components/features/VanDetailsModal';
-import { Heart, Bell, History, Star } from 'lucide-react';
+import { Heart, Bell, History, Star, Loader2 } from 'lucide-react';
+import { avaliacaoService } from '../../services/avaliacaoService';
 import type { Van } from '../../types/Van';
+import type { MinhaAvaliacao } from '../../types/Avaliacao';
 import type { AuthMode } from '../../types';
 
 interface DashboardClienteProps {
@@ -15,30 +17,31 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
   const [activeTab, setActiveTab] = useState('favoritos');
 
-  const favoritos = [
-    {
-      id: 1,
-      nome: 'Van Escolar Central',
-      prestador: 'João Silva Transportes',
-      rota: 'Centro → UNICENTRO',
-      horario: 'Manhã: 06:30',
-      vagas: 3,
-      avaliacao: 4.8,
-      totalAvaliacoes: 24,
-      telefone: '(42) 99999-0001',
-      email: 'joao.van@email.com',
-    },
-  ];
+  const [minhasAvaliacoes, setMinhasAvaliacoes] = useState<MinhaAvaliacao[]>([]);
+  const [avaliacoesLoading, setAvaliacoesLoading] = useState(false);
+  const [avaliacoesError, setAvaliacoesError] = useState<string | null>(null);
 
-  const historico = [
-    {
-      id: 1,
-      van: 'Transporte Universitário',
-      prestador: 'Maria Santos',
-      data: '15/01/2025',
-      avaliacao: 5,
-    },
-  ];
+  const favoritos: Van[] = [];
+  const historico: { id: number; van: string; prestador: string; data: string; avaliacao: number }[] = [];
+
+  useEffect(() => {
+    if (activeTab === 'avaliacoes' && minhasAvaliacoes.length === 0 && !avaliacoesLoading) {
+      carregarAvaliacoes();
+    }
+  }, [activeTab]);
+
+  const carregarAvaliacoes = async () => {
+    setAvaliacoesLoading(true);
+    setAvaliacoesError(null);
+    try {
+      const data = await avaliacaoService.minhas();
+      setMinhasAvaliacoes(data);
+    } catch {
+      setAvaliacoesError('Erro ao carregar avaliações. Tente novamente.');
+    } finally {
+      setAvaliacoesLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,6 +95,7 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
           </div>
 
           <div className="p-6">
+
             {activeTab === 'favoritos' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
@@ -106,15 +110,15 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
 
                 {favoritos.length > 0 ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {favoritos.map((van) => (
+                    {favoritos.map(van => (
                       <VanCard
                         key={van.id}
                         van={van}
                         onViewDetails={setSelectedVan}
-                        onToggleFavorite={() => { } }
-                        isFavorite={true} onViewRoute={function (_van: Van): void {
-                          throw new Error('Function not implemented.');
-                        } }                      />
+                        onToggleFavorite={() => {}}
+                        isFavorite={true}
+                        onViewRoute={() => {}}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -138,7 +142,7 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
                 </h2>
                 {historico.length > 0 ? (
                   <div className="space-y-4">
-                    {historico.map((item) => (
+                    {historico.map(item => (
                       <div
                         key={item.id}
                         className="bg-gray-50 rounded-lg p-6 flex justify-between items-center"
@@ -151,7 +155,7 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
+                          {[1, 2, 3, 4, 5].map(star => (
                             <Star
                               key={star}
                               className={`w-5 h-5 ${
@@ -184,17 +188,71 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
                   Minhas Avaliações
                 </h2>
-                <div className="text-center py-12">
-                  <Star className="w-24 h-24 mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Nenhuma avaliação ainda
-                  </h3>
-                  <p className="text-gray-600">
-                    Avalie os serviços que você utilizou
-                  </p>
-                </div>
+
+                {avaliacoesLoading && (
+                  <div className="flex items-center justify-center py-12 gap-3 text-gray-500">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Carregando avaliações...
+                  </div>
+                )}
+
+                {!avaliacoesLoading && avaliacoesError && (
+                  <div className="text-center py-12">
+                    <p className="text-red-600 mb-3">{avaliacoesError}</p>
+                    <button
+                      onClick={carregarAvaliacoes}
+                      className="text-purple-600 hover:underline text-sm"
+                    >
+                      Tentar novamente
+                    </button>
+                  </div>
+                )}
+
+                {!avaliacoesLoading && !avaliacoesError && minhasAvaliacoes.length === 0 && (
+                  <div className="text-center py-12">
+                    <Star className="w-24 h-24 mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Nenhuma avaliação ainda
+                    </h3>
+                    <p className="text-gray-600">
+                      Avalie as vans que você utilizou abrindo os detalhes delas na busca
+                    </p>
+                  </div>
+                )}
+
+                {!avaliacoesLoading && !avaliacoesError && minhasAvaliacoes.length > 0 && (
+                  <div className="space-y-4">
+                    {minhasAvaliacoes.map(av => (
+                      <div
+                        key={av.id}
+                        className="bg-gray-50 rounded-lg p-5 border border-gray-200"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-gray-900">{av.van}</h3>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <Star
+                                key={star}
+                                className={`w-4 h-4 ${
+                                  star <= av.nota
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {av.comentario && (
+                          <p className="text-gray-700 text-sm mb-2">{av.comentario}</p>
+                        )}
+                        <p className="text-xs text-gray-400">{av.data}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
+
           </div>
         </div>
       </div>
@@ -203,7 +261,6 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
         van={selectedVan}
         isOpen={!!selectedVan}
         onClose={() => setSelectedVan(null)}
-        onAvaliar={() => {}}
       />
 
       <Footer />
