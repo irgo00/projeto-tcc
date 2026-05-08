@@ -3,32 +3,87 @@ import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import VanCard from '../../components/features/VanCard';
 import VanDetailsModal from '../../components/features/VanDetailsModal';
-import { Heart, Bell, History, Star, Loader2 } from 'lucide-react';
+import { Heart, Bell, History, Star, Loader2, Phone, Mail } from 'lucide-react';
 import { avaliacaoService } from '../../services/avaliacaoService';
+import { favoritoService } from '../../services/favoritoService';
+import { historicoService } from '../../services/historicoService';
 import type { Van } from '../../types/Van';
 import type { MinhaAvaliacao } from '../../types/Avaliacao';
+import type { HistoricoItem } from '../../types/Historico';
 import type { AuthMode } from '../../types';
 
 interface DashboardClienteProps {
   onOpenAuth: (mode: AuthMode) => void;
 }
 
+const tipoContatoLabel: Record<string, string> = {
+  telefone: 'Telefone',
+  email: 'E-mail',
+  whatsapp: 'WhatsApp',
+};
+
+const tipoContatoIcon = (tipo: string) => {
+  if (tipo === 'email') return <Mail className="w-4 h-4" />;
+  return <Phone className="w-4 h-4" />;
+};
+
 const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
   const [activeTab, setActiveTab] = useState('favoritos');
+
+  const [favoritos, setFavoritos] = useState<Van[]>([]);
+  const [favoritosLoading, setFavoritosLoading] = useState(false);
+  const [favoritosError, setFavoritosError] = useState<string | null>(null);
+  const [favoritosCarregados, setFavoritosCarregados] = useState(false);
+
+  const [historico, setHistorico] = useState<HistoricoItem[]>([]);
+  const [historicoLoading, setHistoricoLoading] = useState(false);
+  const [historicoError, setHistoricoError] = useState<string | null>(null);
+  const [historicoCarregado, setHistoricoCarregado] = useState(false);
 
   const [minhasAvaliacoes, setMinhasAvaliacoes] = useState<MinhaAvaliacao[]>([]);
   const [avaliacoesLoading, setAvaliacoesLoading] = useState(false);
   const [avaliacoesError, setAvaliacoesError] = useState<string | null>(null);
 
-  const favoritos: Van[] = [];
-  const historico: { id: number; van: string; prestador: string; data: string; avaliacao: number }[] = [];
-
   useEffect(() => {
+    if (activeTab === 'favoritos' && !favoritosCarregados && !favoritosLoading) {
+      carregarFavoritos();
+    }
+    if (activeTab === 'historico' && !historicoCarregado && !historicoLoading) {
+      carregarHistorico();
+    }
     if (activeTab === 'avaliacoes' && minhasAvaliacoes.length === 0 && !avaliacoesLoading) {
       carregarAvaliacoes();
     }
   }, [activeTab]);
+
+  const carregarFavoritos = async () => {
+    setFavoritosLoading(true);
+    setFavoritosError(null);
+    try {
+      const data = await favoritoService.listar();
+      setFavoritos(data);
+      setFavoritosCarregados(true);
+    } catch {
+      setFavoritosError('Erro ao carregar favoritos. Tente novamente.');
+    } finally {
+      setFavoritosLoading(false);
+    }
+  };
+
+  const carregarHistorico = async () => {
+    setHistoricoLoading(true);
+    setHistoricoError(null);
+    try {
+      const data = await historicoService.listar();
+      setHistorico(data);
+      setHistoricoCarregado(true);
+    } catch {
+      setHistoricoError('Erro ao carregar histórico. Tente novamente.');
+    } finally {
+      setHistoricoLoading(false);
+    }
+  };
 
   const carregarAvaliacoes = async () => {
     setAvaliacoesLoading(true);
@@ -40,6 +95,22 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
       setAvaliacoesError('Erro ao carregar avaliações. Tente novamente.');
     } finally {
       setAvaliacoesLoading(false);
+    }
+  };
+
+  const handleToggleFavorito = async (vanId: number) => {
+    try {
+      await favoritoService.remover(vanId);
+      setFavoritos(prev => prev.filter(v => v.id !== vanId));
+    } catch {}
+  };
+
+  const handleFavoritoChangeModal = (vanId: number, isFavorito: boolean) => {
+    if (!isFavorito) {
+      setFavoritos(prev => prev.filter(v => v.id !== vanId));
+    } else {
+      setFavoritosCarregados(false);
+      if (activeTab === 'favoritos') carregarFavoritos();
     }
   };
 
@@ -100,76 +171,86 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    Vans Favoritas ({favoritos.length})
+                    Vans Favoritas{!favoritosLoading && ` (${favoritos.length})`}
                   </h2>
-                  <button className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium">
-                    <Bell className="w-5 h-5" />
-                    Configurar Notificações
+                  <button
+                    onClick={() => { setFavoritosCarregados(false); carregarFavoritos(); }}
+                    className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium text-sm"
+                  >
+                    <Bell className="w-4 h-4" />
+                    Atualizar
                   </button>
                 </div>
 
-                {favoritos.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {favoritos.map(van => (
-                      <VanCard
-                        key={van.id}
-                        van={van}
-                        onViewDetails={setSelectedVan}
-                        onToggleFavorite={() => {}}
-                        isFavorite={true}
-                        onViewRoute={() => {}}
-                      />
-                    ))}
+                {favoritosLoading && (
+                  <div className="flex items-center justify-center py-12 gap-3 text-gray-500">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Carregando favoritos...
                   </div>
-                ) : (
+                )}
+
+                {!favoritosLoading && favoritosError && (
+                  <div className="text-center py-12">
+                    <p className="text-red-600 mb-3">{favoritosError}</p>
+                    <button onClick={carregarFavoritos} className="text-purple-600 hover:underline text-sm">
+                      Tentar novamente
+                    </button>
+                  </div>
+                )}
+
+                {!favoritosLoading && !favoritosError && favoritos.length === 0 && (
                   <div className="text-center py-12">
                     <Heart className="w-24 h-24 mx-auto text-gray-300 mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       Nenhum favorito ainda
                     </h3>
                     <p className="text-gray-600">
-                      Favorite vans para receber notificações quando houver vagas disponíveis
+                      Salve vans nos favoritos a partir dos detalhes de cada uma na busca
                     </p>
+                  </div>
+                )}
+
+                {!favoritosLoading && !favoritosError && favoritos.length > 0 && (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {favoritos.map(van => (
+                      <VanCard
+                        key={van.id}
+                        van={van}
+                        onViewDetails={setSelectedVan}
+                        onToggleFavorite={handleToggleFavorito}
+                        isFavorite={true}
+                        onViewRoute={() => {}}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
             )}
 
+            {/* ── HISTÓRICO ─────────────────────────────── */}
             {activeTab === 'historico' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Histórico de Contatos
+                  Histórico de Contatos{!historicoLoading && ` (${historico.length})`}
                 </h2>
-                {historico.length > 0 ? (
-                  <div className="space-y-4">
-                    {historico.map(item => (
-                      <div
-                        key={item.id}
-                        className="bg-gray-50 rounded-lg p-6 flex justify-between items-center"
-                      >
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{item.van}</h3>
-                          <p className="text-sm text-gray-600">{item.prestador}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Contato realizado em {item.data}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map(star => (
-                            <Star
-                              key={star}
-                              className={`w-5 h-5 ${
-                                star <= item.avaliacao
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+
+                {historicoLoading && (
+                  <div className="flex items-center justify-center py-12 gap-3 text-gray-500">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Carregando histórico...
                   </div>
-                ) : (
+                )}
+
+                {!historicoLoading && historicoError && (
+                  <div className="text-center py-12">
+                    <p className="text-red-600 mb-3">{historicoError}</p>
+                    <button onClick={carregarHistorico} className="text-purple-600 hover:underline text-sm">
+                      Tentar novamente
+                    </button>
+                  </div>
+                )}
+
+                {!historicoLoading && !historicoError && historico.length === 0 && (
                   <div className="text-center py-12">
                     <History className="w-24 h-24 mx-auto text-gray-300 mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -178,6 +259,29 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
                     <p className="text-gray-600">
                       Seus contatos com prestadores aparecerão aqui
                     </p>
+                  </div>
+                )}
+
+                {!historicoLoading && !historicoError && historico.length > 0 && (
+                  <div className="space-y-4">
+                    {historico.map(item => (
+                      <div
+                        key={item.id}
+                        className="bg-gray-50 rounded-lg p-6 flex justify-between items-center border border-gray-200"
+                      >
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{item.van}</h3>
+                          <p className="text-sm text-gray-600">{item.prestador}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Contato realizado em {item.data}
+                          </p>
+                        </div>
+                        <span className="flex items-center gap-1.5 bg-purple-100 text-purple-700 text-xs font-medium px-3 py-1.5 rounded-full">
+                          {tipoContatoIcon(item.tipo_contato)}
+                          {tipoContatoLabel[item.tipo_contato] ?? item.tipo_contato}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -261,6 +365,7 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
         van={selectedVan}
         isOpen={!!selectedVan}
         onClose={() => setSelectedVan(null)}
+        onFavoritoChange={handleFavoritoChangeModal}
       />
 
       <Footer />

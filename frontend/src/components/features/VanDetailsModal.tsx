@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, Users, Star, Phone, Mail, Loader2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { MapPin, Clock, Users, Star, Phone, Mail, Loader2, ChevronDown, ChevronUp, X, Heart } from 'lucide-react';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { avaliacaoService } from '../../services/avaliacaoService';
+import { favoritoService } from '../../services/favoritoService';
+import { historicoService } from '../../services/historicoService';
 import type { Van } from '../../types/Van';
 import type { AvaliacaoItem } from '../../types/Avaliacao';
 
@@ -12,12 +14,14 @@ interface VanDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAvaliar?: (van: Van) => void;
+  onFavoritoChange?: (vanId: number, isFavorito: boolean) => void;
 }
 
 const LIMITE_INICIAL = 3;
 
-const VanDetailsModal = ({ van, isOpen, onClose }: VanDetailsModalProps) => {
+const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsModalProps) => {
   const { user } = useAuth();
+  const isCliente = user?.tipo === 'cliente';
 
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoItem[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -31,6 +35,11 @@ const VanDetailsModal = ({ van, isOpen, onClose }: VanDetailsModalProps) => {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState(false);
 
+  const [isFavorito, setIsFavorito] = useState(false);
+  const [favoritoLoading, setFavoritoLoading] = useState(false);
+
+  const [contatoLoading, setContatoLoading] = useState(false);
+
   useEffect(() => {
     if (!van || !isOpen) {
       setAvaliacoes([]);
@@ -40,6 +49,7 @@ const VanDetailsModal = ({ van, isOpen, onClose }: VanDetailsModalProps) => {
       setFormComentario('');
       setFormError(null);
       setFormSuccess(false);
+      setIsFavorito(false);
       return;
     }
 
@@ -55,9 +65,15 @@ const VanDetailsModal = ({ van, isOpen, onClose }: VanDetailsModalProps) => {
     };
 
     carregar();
+
+    if (isCliente) {
+      favoritoService.verificar(van.id)
+        .then(setIsFavorito)
+        .catch(() => {});
+    }
   }, [van?.id, isOpen]);
 
-  const handleSubmit = async () => {
+  const handleSubmitAvaliacao = async () => {
     if (!van || formNota === 0) {
       setFormError('Selecione uma nota de 1 a 5 estrelas.');
       return;
@@ -83,11 +99,51 @@ const VanDetailsModal = ({ van, isOpen, onClose }: VanDetailsModalProps) => {
     }
   };
 
+  const handleToggleFavorito = async () => {
+    if (!van) return;
+    setFavoritoLoading(true);
+    try {
+      if (isFavorito) {
+        await favoritoService.remover(van.id);
+        setIsFavorito(false);
+        onFavoritoChange?.(van.id, false);
+      } else {
+        await favoritoService.adicionar(van.id);
+        setIsFavorito(true);
+        onFavoritoChange?.(van.id, true);
+      }
+    } catch {
+    } finally {
+      setFavoritoLoading(false);
+    }
+  };
+
+  const handleEntrarEmContato = async () => {
+    if (!van) return;
+    if (isCliente) {
+      setContatoLoading(true);
+      try {
+        await historicoService.registrar(van.id, 'whatsapp');
+      } catch {
+      } finally {
+        setContatoLoading(false);
+      }
+    }
+    if (van.telefone) {
+      const digits = van.telefone.replace(/\D/g, '');
+      const numero = digits.startsWith('55') ? digits : `55${digits}`;
+      const mensagem = encodeURIComponent(
+        `Olá! Encontrei sua van "${van.nome}" no PBTE e tenho interesse. Poderia me passar mais informações?`
+      );
+      window.open(`https://wa.me/${numero}?text=${mensagem}`, '_blank');
+    }
+  };
+
   if (!van) return null;
 
   const visiveis = showingAll ? avaliacoes : avaliacoes.slice(0, LIMITE_INICIAL);
   const extras = avaliacoes.length - LIMITE_INICIAL;
-  const podeAvaliar = user?.tipo === 'cliente';
+  const podeAvaliar = isCliente;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
@@ -304,7 +360,7 @@ const VanDetailsModal = ({ van, isOpen, onClose }: VanDetailsModalProps) => {
                     <Button
                       variant="primary"
                       loading={formLoading}
-                      onClick={handleSubmit}
+                      onClick={handleSubmitAvaliacao}
                       className="w-full"
                     >
                       Enviar Avaliação
@@ -324,13 +380,39 @@ const VanDetailsModal = ({ van, isOpen, onClose }: VanDetailsModalProps) => {
         </div>
 
         <div className="space-y-3">
-          <Button variant="primary" size="lg" className="w-full flex items-center justify-center gap-2">
+          <Button
+            variant="primary"
+            size="lg"
+            loading={contatoLoading}
+            onClick={handleEntrarEmContato}
+            className="w-full flex items-center justify-center gap-2"
+          >
             <Phone className="w-5 h-5" />
             Entrar em Contato
           </Button>
-          <Button variant="outline" className="w-full">
-            Salvar nos Favoritos
-          </Button>
+
+          {isCliente && (
+            <Button
+              variant="outline"
+              loading={favoritoLoading}
+              onClick={handleToggleFavorito}
+              className={`w-full flex items-center justify-center gap-2 transition-colors ${
+                isFavorito
+                  ? 'border-red-400 text-red-500 hover:bg-red-50'
+                  : 'hover:border-red-400 hover:text-red-500'
+              }`}
+            >
+              <Heart className={`w-5 h-5 ${isFavorito ? 'fill-current' : ''}`} />
+              {isFavorito ? 'Remover dos Favoritos' : 'Salvar nos Favoritos'}
+            </Button>
+          )}
+
+          {!user && (
+            <p className="text-center text-sm text-gray-500">
+              <button className="text-purple-600 hover:underline font-medium">Faça login</button>
+              {' '}para salvar nos favoritos.
+            </p>
+          )}
         </div>
       </div>
     </Modal>
