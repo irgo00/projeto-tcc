@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class FavoritoController extends Controller
 {
-    /**
-     * Listar favoritos (clientes)
-     */
     public function index()
     {
         /** @var \App\Models\User $user */
@@ -18,31 +15,26 @@ class FavoritoController extends Controller
 
         $favoritos = $user
             ->favoritos()
-            ->with('prestador:id,nome')
+            ->with(['prestador:id,nome', 'avaliacoes'])
             ->get()
             ->map(function ($van) {
                 return [
-                    'id' => $van->id,
-                    'nome' => $van->nome,
-                    'prestador' => $van->prestador->nome,
-                    'rota' => $van->rota,
-                    'horario' => $van->horario_formatado,
-                    'vagas' => $van->vagas_disponiveis,
-                    'avaliacao' => $van->avaliacao_media,
-                    'telefone' => $van->telefone,
-                    'email' => $van->email,
+                    'id'              => $van->id,
+                    'nome'            => $van->nome,
+                    'prestador'       => $van->prestador->nome,
+                    'rota'            => $van->rota,
+                    'horario'         => $van->horario_formatado,
+                    'vagas'           => $van->vagas_disponiveis,
+                    'avaliacao'       => $van->avaliacao_media,
+                    'totalAvaliacoes' => $van->total_avaliacoes,
+                    'telefone'        => $van->telefone,
+                    'email'           => $van->email,
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'favoritos' => $favoritos
-        ]);
+        return response()->json($favoritos);
     }
 
-    /**
-     * Adicionar favorito
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -67,9 +59,6 @@ class FavoritoController extends Controller
         ]);
     }
 
-    /**
-     * Remover favorito
-     */
     public function destroy($vanId)
     {
         /** @var \App\Models\User $user */
@@ -90,9 +79,6 @@ class FavoritoController extends Controller
         ]);
     }
 
-    /**
-     * Verificar se é favorito
-     */
     public function check($vanId)
     {
         /** @var \App\Models\User $user */

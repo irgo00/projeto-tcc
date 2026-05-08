@@ -13,11 +13,6 @@ interface SearchSectionProps {
   resultsCount?: number;
 }
 
-// ============================================================
-// 🔧 MODIFICADO: Adicionadas props showResultsCount e resultsCount
-// Antes só tinha: ({ onSearch })
-// Agora tem: ({ onSearch, showResultsCount = false, resultsCount = 0 })
-// ============================================================
 const SearchSection = ({
   onSearch,
   showResultsCount = false,
@@ -25,7 +20,7 @@ const SearchSection = ({
 }: SearchSectionProps) => {
   const [origem, setOrigem] = useState("");
   const [instituicao, setInstituicao] = useState("");
-  const [periodo, setPeriodo] = useState("manha");
+  const [periodo, setPeriodo] = useState("");
 
   const handleSubmit = () => {
     onSearch({ origem, instituicao, periodo });
@@ -44,7 +39,6 @@ const SearchSection = ({
           <p className="text-xl text-purple-100">
             Conectando estudantes aos melhores serviços em Irati-PR
           </p>
-          {/* 🆕 NOVO: Contador de resultados - só aparece na página Busca */}
           {showResultsCount && (
             <p className="text-lg text-purple-200 mt-2">
               {resultsCount}{" "}
@@ -77,8 +71,9 @@ const SearchSection = ({
                 <Clock className="inline w-4 h-4 mr-1" />
                 Período
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {[
+                  { label: "Qualquer horário", value: "" },
                   { label: "Manhã", value: "manha" },
                   { label: "Tarde", value: "tarde" },
                   { label: "Noite", value: "noite" },

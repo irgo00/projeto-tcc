@@ -1,16 +1,8 @@
 import api from "./api";
-
-export interface Favorito {
-  id: number;
-  nome: string;
-  prestador: string;
-  rota: string;
-  vagas: number;
-  avaliacao: number;
-}
+import type { Van } from "../types/Van";
 
 export const favoritoService = {
-  listar: async (): Promise<Favorito[]> => {
+  listar: async (): Promise<Van[]> => {
     const response = await api.get("/favoritos");
     return response.data;
   },
@@ -23,15 +15,9 @@ export const favoritoService = {
     await api.delete(`/favoritos/${vanId}`);
   },
 
-  isFavorito: async (vanId: number): Promise<boolean> => {
-    try {
-      const response = await api.get<{ isFavorito: boolean }>(
-        `/favoritos/check/${vanId}`
-      );
-      return response.data.isFavorito;
-    } catch {
-      return false;
-    }
+  verificar: async (vanId: number): Promise<boolean> => {
+    const response = await api.get(`/favoritos/check/${vanId}`);
+    return response.data.isFavorito as boolean;
   },
 };
 

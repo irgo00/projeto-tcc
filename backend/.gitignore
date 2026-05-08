@@ -34,6 +34,7 @@
 .phpunit.result.cache
 /.phpunit.cache
 .phpactor.json
+/bootstrap/cache/*.php
 
 # =========================
 # IDEs / Editors

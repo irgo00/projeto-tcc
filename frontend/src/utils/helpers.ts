@@ -27,6 +27,37 @@ export const isValidEmail = (email: string): boolean => {
   return regex.test(email);
 };
 
+// Validar telefone (mínimo 10 dígitos, máximo 11)
+export const isValidTelefone = (telefone: string): boolean => {
+  const digits = telefone.replace(/\D/g, "");
+  return digits.length >= 10 && digits.length <= 11;
+};
+
+// Validar senha — retorna mensagem de erro ou null se válida
+export const validateSenha = (senha: string): string | null => {
+  if (!senha) return "Senha é obrigatória";
+  if (senha.length < 8) return "A senha deve ter no mínimo 8 caracteres";
+  if (!/[A-Z]/.test(senha)) return "A senha deve conter pelo menos uma letra maiúscula";
+  if (!/[a-z]/.test(senha)) return "A senha deve conter pelo menos uma letra minúscula";
+  if (!/[0-9]/.test(senha)) return "A senha deve conter pelo menos um número";
+  if (!/[@$!%*?&_\-#]/.test(senha)) return "A senha deve conter pelo menos um caractere especial (@$!%*?&_-#)";
+  return null;
+};
+
+export const formatMoeda = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  const num = parseInt(digits, 10);
+  const reais = Math.floor(num / 100);
+  const centavos = num % 100;
+  const reaisFormatado = reais.toLocaleString('pt-BR');
+  return `${reaisFormatado},${String(centavos).padStart(2, '0')}`;
+};
+
+export const parseMoeda = (value: string): number => {
+  return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+};
+
 // Validar CPF
 export const isValidCPF = (cpf: string): boolean => {
   cpf = cpf.replace(/\D/g, "");

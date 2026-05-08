@@ -2,20 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Avaliacao extends Model
+class Favorito extends Model
 {
-    use HasFactory;
-
-    protected $table = 'avaliacoes';
+    protected $table = 'favoritos';
 
     protected $fillable = [
         'usuario_id',
         'van_id',
-        'nota',
-        'comentario',
     ];
 
     public function usuario()

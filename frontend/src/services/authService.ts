@@ -39,10 +39,12 @@ export const authService = {
   },
 
   async register(
-    userData: Partial<User>,
+    userData: Partial<User> & { dataNascimento?: string; senha?: string; confirmarSenha?: string },
   ): Promise<{ user: User; token: string }> {
     try {
-      const response = await api.post<AuthResponse>("/register", userData);
+      const { dataNascimento, confirmarSenha, ...rest } = userData;
+      const payload = { ...rest, ...(dataNascimento && { data_nascimento: dataNascimento }) };
+      const response = await api.post<AuthResponse>("/register", payload);
 
       if (!response.data.success) {
         throw new Error(response.data.message || "Erro ao cadastrar");
@@ -55,8 +57,23 @@ export const authService = {
 
       return { user, token };
     } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      throw new Error(err.response?.data?.message || "Erro ao criar conta");
+      const err = error as AxiosError<any>;
+
+      const data = err.response?.data;
+
+      if (data?.errors) {
+        const messages = Object.values(data.errors)
+          .flat()
+          .join("\n");
+
+        throw new Error(messages);
+      }
+
+      if (data?.message) {
+        throw new Error(data.message);
+      }
+
+      throw new Error("Erro ao criar conta");
     }
   },
 

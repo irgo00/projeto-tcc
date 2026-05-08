@@ -1,9 +1,11 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('historico_contatos', function (Blueprint $table) {
@@ -12,7 +14,9 @@ return new class extends Migration {
             $table->foreignId('van_id')->constrained('vans')->onDelete('cascade');
             $table->enum('tipo_contato', ['telefone', 'email', 'whatsapp']);
             $table->timestamps();
-            $table->index('created_at');
+
+            $table->index(['usuario_id', 'created_at']);
+            $table->index('van_id');
         });
     }
 

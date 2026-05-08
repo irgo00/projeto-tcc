@@ -1,11 +1,12 @@
 import React, { useState, type InputHTMLAttributes } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { formatCPF, formatTelefone } from "../../utils/helpers";
+import { formatCPF, formatTelefone, formatMoeda } from "../../utils/helpers";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   icon?: React.ComponentType<{ className?: string }>;
+  currency?: boolean;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -14,6 +15,7 @@ const Input: React.FC<InputProps> = ({
   error,
   icon: Icon,
   required = false,
+  currency = false,
   name,
   value,
   onChange,
@@ -32,6 +34,10 @@ const Input: React.FC<InputProps> = ({
 
     if (type === "tel") {
       val = formatTelefone(val);
+    }
+
+    if (currency) {
+      val = formatMoeda(val);
     }
 
     onChange?.({

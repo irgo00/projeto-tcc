@@ -40,6 +40,21 @@ function App() {
             element={<DashboardPrestador />}
           />
 
+          <Route
+            path="/perfil"
+            element={<MeuPerfil onOpenAuth={setAuthModal} />}
+          />
+
+          <Route
+            path="/dashboard/cliente"
+            element={<DashboardCliente onOpenAuth={setAuthModal} />}
+          />
+
+          <Route
+            path="/dashboard/prestador"
+            element={<DashboardPrestador onOpenAuth={setAuthModal} />}
+          />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 

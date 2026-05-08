@@ -10,12 +10,14 @@ return new class extends Migration
     {
         Schema::create('coordenadas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('van_id')->constrained()->onDelete('cascade');
+            $table->foreignId('van_id')->constrained('vans')->onDelete('cascade');
+            $table->string('nome');
             $table->decimal('latitude', 10, 8);
             $table->decimal('longitude', 11, 8);
-            $table->string('nome');
-            $table->integer('ordem')->default(0);
+            $table->unsignedInteger('ordem')->default(0);
             $table->timestamps();
+
+            $table->index(['van_id', 'ordem']);
         });
     }
 
