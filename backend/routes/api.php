@@ -10,9 +10,12 @@ Route::post('/vans/buscar', [VanController::class, 'buscar']);
 Route::get('/vans/minhas', [VanController::class, 'minhas'])->middleware('auth:api');
 Route::get('/vans/{id}', [VanController::class, 'show']);
 Route::get('/avaliacoes/van/{vanId}', [AvaliacaoController::class, 'porVan']);
-Route::get('/debug/vans', function () {
-    return \App\Models\Van::all();
-});
+
+if (app()->environment('local')) {
+    Route::get('/debug/vans', function () {
+        return \App\Models\Van::all();
+    });
+}
 
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

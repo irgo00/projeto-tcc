@@ -27,6 +27,18 @@ function App() {
             path="/busca"
             element={<Busca onOpenAuth={setAuthModal} />}
           />
+          <Route
+            path="/perfil"
+            element={<MeuPerfil onOpenAuth={() => setAuthModal("login")} onNavigate={() => {}} />}
+          />
+          <Route
+            path="/dashboard/cliente"
+            element={<DashboardCliente />}
+          />
+          <Route
+            path="/dashboard/prestador"
+            element={<DashboardPrestador />}
+          />
 
           <Route
             path="/perfil"

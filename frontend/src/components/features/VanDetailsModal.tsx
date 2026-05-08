@@ -141,6 +141,8 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
 
   if (!van) return null;
 
+  const avaliacao = Number(van.avaliacao) || 0;
+  const horarios = Object.entries(van.horario ?? {});
   const visiveis = showingAll ? avaliacoes : avaliacoes.slice(0, LIMITE_INICIAL);
   const extras = avaliacoes.length - LIMITE_INICIAL;
   const podeAvaliar = isCliente;
@@ -168,6 +170,16 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
                 <Clock className="w-5 h-5 mr-2 text-purple-600" />
                 Horários
               </h3>
+              <div className="text-gray-700 ml-7 text-sm space-y-1">
+                {horarios.length > 0 ? (
+                  horarios.map(([periodo, hora]) => (
+                    <p key={periodo}>
+                      <span className="capitalize">{periodo}:</span> {hora}
+                    </p>
+                  ))
+                ) : (
+                  <p>Horário não informado</p>
+                )}
               <div className="ml-7 text-sm text-gray-700 space-y-1">
                 {Object.entries(van.horario).map(([periodo, hora]) => (
                   <p key={periodo}>
@@ -215,7 +227,7 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
 
             <div className="flex items-center mb-5">
               <span className="text-4xl font-bold text-gray-900">
-                {van.avaliacao.toFixed(1)}
+                {avaliacao.toFixed(1)}
               </span>
               <div className="ml-4">
                 <div className="flex gap-0.5">
@@ -223,7 +235,7 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
-                        i <= Math.round(van.avaliacao)
+                        i <= Math.round(avaliacao)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
