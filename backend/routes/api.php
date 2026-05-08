@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{AuthController, VanController, AvaliacaoController, FavoritoController, DashboardController, HistoricoContatoController};
 
-// Públicas
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/vans', [VanController::class, 'index']);
@@ -15,7 +14,6 @@ Route::get('/debug/vans', function () {
     return \App\Models\Van::all();
 });
 
-// Autenticadas
 Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
@@ -28,6 +26,7 @@ Route::middleware(['auth:api'])->group(function () {
 
     Route::post('/avaliacoes', [AvaliacaoController::class, 'store']);
     Route::get('/avaliacoes/minhas', [AvaliacaoController::class, 'minhas']);
+    Route::get('/avaliacoes/recebidas', [AvaliacaoController::class, 'recebidas']);
 
     Route::get('/favoritos', [FavoritoController::class, 'index']);
     Route::post('/favoritos', [FavoritoController::class, 'store']);

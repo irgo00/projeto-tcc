@@ -1,5 +1,5 @@
 import api from "./api";
-import type { AvaliacaoItem, MinhaAvaliacao } from "../types/Avaliacao";
+import type { AvaliacaoItem, MinhaAvaliacao, AvaliacaoRecebida } from "../types/Avaliacao";
 
 export const avaliacaoService = {
   criar: async ({
@@ -21,6 +21,11 @@ export const avaliacaoService = {
 
   minhas: async (): Promise<MinhaAvaliacao[]> => {
     const response = await api.get("/avaliacoes/minhas");
+    return response.data;
+  },
+
+  recebidas: async (): Promise<AvaliacaoRecebida[]> => {
+    const response = await api.get("/avaliacoes/recebidas");
     return response.data;
   },
 };

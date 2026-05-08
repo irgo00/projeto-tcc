@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AvaliacaoController extends Controller
 {
-    /**
-     * Criar avaliação (apenas clientes)
-     */
+
     public function store(Request $request)
     {
         /** @var \App\Models\User $user */
@@ -38,7 +36,6 @@ class AvaliacaoController extends Controller
             ], 422);
         }
 
-        // Verificar se já avaliou
         $avaliacaoExistente = Avaliacao::where('usuario_id', auth()->id())
             ->where('van_id', $request->van_id)
             ->first();
@@ -64,9 +61,6 @@ class AvaliacaoController extends Controller
         ], 201);
     }
 
-    /**
-     * Listar avaliações de uma van (público)
-     */
     public function porVan($vanId)
     {
         $van = Van::find($vanId);
@@ -95,9 +89,30 @@ class AvaliacaoController extends Controller
         return response()->json($avaliacoes);
     }
 
-    /**
-     * Minhas avaliações (clientes)
-     */
+    public function recebidas()
+    {
+        $user = auth()->user();
+
+        $vanIds = Van::where('prestador_id', $user->id)->pluck('id');
+
+        $avaliacoes = Avaliacao::with(['usuario:id,nome', 'van:id,nome'])
+            ->whereIn('van_id', $vanIds)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($avaliacao) {
+                return [
+                    'id'         => $avaliacao->id,
+                    'usuario'    => $avaliacao->usuario->nome,
+                    'van'        => $avaliacao->van->nome,
+                    'nota'       => $avaliacao->nota,
+                    'comentario' => $avaliacao->comentario,
+                    'data'       => $avaliacao->created_at->format('d/m/Y'),
+                ];
+            });
+
+        return response()->json($avaliacoes);
+    }
+
     public function minhas()
     {
         $avaliacoes = Avaliacao::with('van:id,nome')

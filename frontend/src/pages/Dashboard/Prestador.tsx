@@ -10,8 +10,10 @@ import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
 import { useAuth } from '../../hooks/useAuth';
 import { vanService } from '../../services/vanService';
+import { avaliacaoService } from '../../services/avaliacaoService';
 import { parseMoeda, formatMoeda } from '../../utils/helpers';
 import type { Van, VanFormData } from '../../types/Van';
+import type { AvaliacaoRecebida } from '../../types/Avaliacao';
 import type { AuthMode } from '../../types';
 
 interface DashboardPrestadorProps {
@@ -56,14 +58,32 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
   const [togglingVanId, setTogglingVanId] = useState<number | null>(null);
 
-  const avaliacoes = [
-    { id: 1, cliente: 'Maria Silva', nota: 5, comentario: 'Excelente serviço, sempre pontual!', data: '10/01/2025', rota: 'Van Escolar Central' },
-    { id: 2, cliente: 'João Santos', nota: 4, comentario: 'Muito bom, motorista educado.', data: '08/01/2025', rota: 'Transporte Noturno' },
-  ];
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoRecebida[]>([]);
+  const [avaliacoesLoading, setAvaliacoesLoading] = useState(false);
+  const [avaliacoesError, setAvaliacoesError] = useState<string | null>(null);
 
   useEffect(() => {
     carregarVans();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'avaliacoes' && avaliacoes.length === 0 && !avaliacoesLoading) {
+      carregarAvaliacoes();
+    }
+  }, [activeTab]);
+
+  const carregarAvaliacoes = async () => {
+    setAvaliacoesLoading(true);
+    setAvaliacoesError(null);
+    try {
+      const data = await avaliacaoService.recebidas();
+      setAvaliacoes(data);
+    } catch {
+      setAvaliacoesError('Erro ao carregar avaliações. Tente novamente.');
+    } finally {
+      setAvaliacoesLoading(false);
+    }
+  };
 
   const carregarVans = async () => {
     setLoading(true);
@@ -532,37 +552,73 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
             {activeTab === 'avaliacoes' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Avaliações Recebidas ({avaliacoes.length})
+                  Avaliações Recebidas{!avaliacoesLoading && ` (${avaliacoes.length})`}
                 </h2>
-                <div className="space-y-4">
-                  {avaliacoes.map(avaliacao => (
-                    <div
-                      key={avaliacao.id}
-                      className="bg-gray-50 rounded-lg p-6 border border-gray-200"
+
+                {avaliacoesLoading && (
+                  <div className="flex items-center justify-center py-12 gap-3 text-gray-500">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Carregando avaliações...
+                  </div>
+                )}
+
+                {!avaliacoesLoading && avaliacoesError && (
+                  <div className="text-center py-12">
+                    <p className="text-red-600 mb-3">{avaliacoesError}</p>
+                    <button
+                      onClick={carregarAvaliacoes}
+                      className="text-purple-600 hover:underline text-sm"
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{avaliacao.cliente}</h3>
-                          <p className="text-sm text-gray-500">{avaliacao.rota}</p>
+                      Tentar novamente
+                    </button>
+                  </div>
+                )}
+
+                {!avaliacoesLoading && !avaliacoesError && avaliacoes.length === 0 && (
+                  <div className="text-center py-12">
+                    <Star className="w-24 h-24 mx-auto text-gray-300 mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Nenhuma avaliação ainda
+                    </h3>
+                    <p className="text-gray-600">
+                      As avaliações dos clientes sobre suas vans aparecerão aqui
+                    </p>
+                  </div>
+                )}
+
+                {!avaliacoesLoading && !avaliacoesError && avaliacoes.length > 0 && (
+                  <div className="space-y-4">
+                    {avaliacoes.map(avaliacao => (
+                      <div
+                        key={avaliacao.id}
+                        className="bg-gray-50 rounded-lg p-6 border border-gray-200"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{avaliacao.usuario}</h3>
+                            <p className="text-sm text-purple-600 font-medium">{avaliacao.van}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <Star
+                                key={star}
+                                className={`w-4 h-4 ${
+                                  star <= avaliacao.nota
+                                    ? 'text-yellow-400 fill-current'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map(star => (
-                            <Star
-                              key={star}
-                              className={`w-4 h-4 ${
-                                star <= avaliacao.nota
-                                  ? 'text-yellow-400 fill-current'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          ))}
-                        </div>
+                        {avaliacao.comentario && (
+                          <p className="text-gray-700 text-sm mb-2">{avaliacao.comentario}</p>
+                        )}
+                        <p className="text-xs text-gray-400">{avaliacao.data}</p>
                       </div>
-                      <p className="text-gray-700 mb-2">{avaliacao.comentario}</p>
-                      <p className="text-xs text-gray-500">{avaliacao.data}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
