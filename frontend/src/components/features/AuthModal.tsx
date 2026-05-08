@@ -3,6 +3,7 @@ import Modal from "../common/Modal";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { useAuth } from "../../hooks/useAuth";
+import { isValidTelefone, validateSenha } from "../../utils/helpers";
 import type { AuthMode } from "../../types";
 
 interface AuthModalProps {
@@ -41,6 +42,7 @@ const AuthModal = ({
     tipo: "cliente",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
 
@@ -84,6 +86,8 @@ const AuthModal = ({
         newErrors.dataNascimento = "Data de nascimento é obrigatória";
       if (!formData.telefone.trim())
         newErrors.telefone = "Telefone é obrigatório";
+      else if (!isValidTelefone(formData.telefone))
+        newErrors.telefone = "Telefone inválido — informe DDD + número";
 
       if (formData.senha !== formData.confirmarSenha) {
         newErrors.confirmarSenha = "As senhas não coincidem";
@@ -105,11 +109,8 @@ const AuthModal = ({
       newErrors.email = "Email inválido";
     }
 
-    if (!formData.senha.trim()) {
-      newErrors.senha = "Senha é obrigatória";
-    } else if (formData.senha.length < 8) {
-      newErrors.senha = "Senha deve ter no mínimo 8 caracteres";
-    }
+    const senhaErro = validateSenha(formData.senha);
+    if (senhaErro) newErrors.senha = senhaErro;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -118,6 +119,7 @@ const AuthModal = ({
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
+    setLoading(true);
     try {
       if (isLogin) {
         await login(formData.email, formData.senha);
@@ -129,6 +131,8 @@ const AuthModal = ({
       const message =
         error instanceof Error ? error.message : "Erro ao processar requisição";
       setErrors({ submit: message });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -284,6 +288,7 @@ const AuthModal = ({
           variant="primary"
           size="lg"
           onClick={handleSubmit}
+          loading={loading}
           className="w-full"
         >
           {isLogin ? "Entrar" : "Cadastrar"}

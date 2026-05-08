@@ -11,9 +11,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    /**
-     * Registro de novo usuário
-     */
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -22,13 +20,15 @@ class AuthController extends Controller
             'cpf' => 'required|string|size:14|unique:users',
             'data_nascimento' => 'required|date|before:' . now()->subYears(config('app.min_age', 13))->format('Y-m-d'),
             'telefone' => 'required|string|max:20',
-            'senha' => 'required|string|min:8',
+            'senha' => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&_\-#]/'],
             'tipo' => 'required|in:cliente,prestador',
         ], [
-            'data_nascimento.before' => 'É necessário ter pelo menos ' . config('app.min_age', 13) . ' anos para criar uma conta.',
+            'data_nascimento.before' => 'É necessário ter pelo menos 13 anos para criar uma conta.',
             'cpf.size' => 'CPF inválido.',
             'cpf.unique' => 'Este CPF já está cadastrado.',
             'email.unique' => 'Este email já está cadastrado.',
+            'senha.min' => 'A senha deve ter no mínimo 8 caracteres.',
+            'senha.regex' => 'A senha deve conter maiúscula, minúscula, número e caractere especial (@$!%*?&_-#).',
         ]);
 
         if ($validator->fails()) {
@@ -38,7 +38,6 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Validar CPF
         if (!$this->validarCPF($request->cpf)) {
             return response()->json([
                 'success' => false,
@@ -73,9 +72,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /**
-     * Login de usuário
-     */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -119,9 +115,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Logout de usuário
-     */
     public function logout()
     {
         JWTAuth::invalidate(JWTAuth::getToken());
@@ -132,9 +125,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Obter dados do usuário autenticado
-     */
     public function me()
     {
         /** @var \App\Models\User $user */
@@ -154,12 +144,8 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Atualizar perfil do usuário
-     */
     public function updateProfile(Request $request)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $validator = Validator::make($request->all(), [
@@ -191,14 +177,15 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Alterar senha
-     */
     public function changePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'senha_atual' => 'required|string',
-            'nova_senha' => 'required|string|min:8|different:senha_atual',
+            'nova_senha' => ['required', 'string', 'min:8', 'different:senha_atual', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&_\-#]/'],
+        ], [
+            'nova_senha.min' => 'A nova senha deve ter no mínimo 8 caracteres.',
+            'nova_senha.different' => 'A nova senha deve ser diferente da senha atual.',
+            'nova_senha.regex' => 'A nova senha deve conter maiúscula, minúscula, número e caractere especial (@$!%*?&_-#).',
         ]);
 
         if ($validator->fails()) {
@@ -208,7 +195,6 @@ class AuthController extends Controller
             ], 422);
         }
 
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if (!Hash::check($request->senha_atual, $user->password)) {
@@ -227,9 +213,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Validar CPF
-     */
     private function validarCPF($cpf)
     {
         $cpf = preg_replace('/[^0-9]/', '', $cpf);

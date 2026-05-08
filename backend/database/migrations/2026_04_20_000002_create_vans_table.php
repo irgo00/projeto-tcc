@@ -1,9 +1,11 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('vans', function (Blueprint $table) {
@@ -14,19 +16,20 @@ return new class extends Migration {
             $table->string('destino');
             $table->string('instituicao');
             $table->string('rota', 500);
-            $table->json('coordenadas')->nullable();
-            $table->time('horario_manha')->nullable();
-            $table->time('horario_tarde')->nullable();
-            $table->time('horario_noite')->nullable();
-            $table->integer('vagas_totais');
-            $table->integer('vagas_disponiveis');
+            $table->string('horario_manha', 10)->nullable();
+            $table->string('horario_tarde', 10)->nullable();
+            $table->string('horario_noite', 10)->nullable();
+            $table->unsignedInteger('vagas_totais');
+            $table->unsignedInteger('vagas_disponiveis');
+            $table->decimal('valor_mensal', 8, 2)->nullable();
             $table->string('telefone', 20)->nullable();
             $table->string('email')->nullable();
             $table->boolean('ativa')->default(true);
-            $table->decimal('avaliacao_media', 2, 1)->default(0);
-            $table->integer('total_avaliacoes')->default(0);
+            $table->decimal('avaliacao_media', 3, 2)->default(0.00);
+            $table->unsignedInteger('total_avaliacoes')->default(0);
             $table->timestamps();
             $table->softDeletes();
+
             $table->index('prestador_id');
             $table->index('origem');
             $table->index('instituicao');

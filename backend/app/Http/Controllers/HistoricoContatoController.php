@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class HistoricoContatoController extends Controller
 {
-    /**
-     * Registrar contato
-     */
+
     public function registrar(Request $request)
     {
         $request->validate([
@@ -31,12 +29,9 @@ class HistoricoContatoController extends Controller
         ], 201);
     }
 
-    /**
-     * Listar histórico do usuário
-     */
     public function index()
     {
-        $historico = HistoricoContato::with(['van:id,nome', 'van.prestador:id,nome'])
+        $historico = HistoricoContato::with(['van:id,nome,prestador_id', 'van.prestador:id,nome'])
             ->where('usuario_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(20)

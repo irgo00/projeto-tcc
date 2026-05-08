@@ -17,20 +17,20 @@ class Van extends Model
         'destino',
         'instituicao',
         'rota',
-        'coordenadas',
         'horario_manha',
         'horario_tarde',
         'horario_noite',
         'vagas_totais',
         'vagas_disponiveis',
+        'valor_mensal',
         'telefone',
         'email',
         'ativa',
     ];
 
     protected $casts = [
-        'coordenadas' => 'array',
         'ativa' => 'boolean',
+        'valor_mensal' => 'decimal:2',
     ];
 
     /* ======================
@@ -49,7 +49,7 @@ class Van extends Model
 
     public function favoritos()
     {
-        return $this->belongsToMany(User::class, 'favoritos');
+        return $this->belongsToMany(User::class, 'favoritos', 'van_id', 'usuario_id');
     }
 
     public function coordenadas()
@@ -68,7 +68,7 @@ class Van extends Model
 
     public function getAvaliacaoMediaAttribute()
     {
-        return round($this->avaliacoes()->avg('nota'), 1);
+        return round((float) $this->avaliacoes()->avg('nota'), 1);
     }
 
     public function getTotalAvaliacoesAttribute()

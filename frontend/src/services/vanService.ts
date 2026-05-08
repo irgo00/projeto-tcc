@@ -2,7 +2,7 @@ import api from "./api";
 import type { Van } from "../types/Van";
 
 export const vanService = {
-  buscar: async (filtros: Partial<Van>): Promise<Van[]> => {
+  buscar: async (filtros: { origem?: string; instituicao?: string; periodo?: string }): Promise<Van[]> => {
     const response = await api.post("/vans/buscar", filtros);
     return response.data.vans;
   },
@@ -17,14 +17,14 @@ export const vanService = {
     return response.data.van;
   },
 
-  criar: async (vanData: Omit<Van, "id">): Promise<Van> => {
+  criar: async (vanData: object): Promise<Van> => {
     const response = await api.post("/vans", vanData);
-    return response.data;
+    return response.data.van;
   },
 
-  atualizar: async (id: number, vanData: Partial<Van>): Promise<Van> => {
+  atualizar: async (id: number, vanData: object): Promise<Van> => {
     const response = await api.put(`/vans/${id}`, vanData);
-    return response.data;
+    return response.data.van;
   },
 
   deletar: async (id: number): Promise<void> => {

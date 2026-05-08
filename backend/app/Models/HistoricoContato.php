@@ -9,19 +9,30 @@ class HistoricoContato extends Model
 {
     use HasFactory;
 
+    protected $table = 'historico_contatos';
+
     protected $fillable = [
-        'user_id',
+        'usuario_id',
         'van_id',
-        'tipo',
+        'tipo_contato',
     ];
 
-    public function user()
+    public function usuario()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 
     public function van()
     {
         return $this->belongsTo(Van::class);
+    }
+
+    public static function registrar(int $usuarioId, int $vanId, string $tipoContato): self
+    {
+        return self::create([
+            'usuario_id'   => $usuarioId,
+            'van_id'       => $vanId,
+            'tipo_contato' => $tipoContato,
+        ]);
     }
 }
