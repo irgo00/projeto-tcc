@@ -31,30 +31,7 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
   const [activeTab, setActiveTab] = useState('favoritos');
 
-  const favoritos = [
-    {
-      id: 1,
-      nome: 'Van Escolar Central',
-      prestador: 'João Silva Transportes',
-      rota: 'Centro → UNICENTRO',
-      horario: { manha: '06:30' },
-      vagas: 3,
-      avaliacao: 4.8,
-      totalAvaliacoes: 24,
-      telefone: '(42) 99999-0001',
-      email: 'joao.van@email.com',
-    },
-  ];
-
-  const historico = [
-    {
-      id: 1,
-      van: 'Transporte Universitário',
-      prestador: 'Maria Santos',
-      data: '15/01/2025',
-      avaliacao: 5,
-    },
-  ];
+  // favoritos
   const [favoritos, setFavoritos] = useState<Van[]>([]);
   const [favoritosLoading, setFavoritosLoading] = useState(false);
   const [favoritosError, setFavoritosError] = useState<string | null>(null);
@@ -206,18 +183,6 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
                   </button>
                 </div>
 
-                {favoritos.length > 0 ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {favoritos.map((van) => (
-                      <VanCard
-                        key={van.id}
-                        van={van}
-                        onViewDetails={setSelectedVan}
-                        onToggleFavorite={() => {}}
-                        isFavorite={true}
-                        onViewRoute={() => {}}
-                      />
-                    ))}
                 {favoritosLoading && (
                   <div className="flex items-center justify-center py-12 gap-3 text-gray-500">
                     <Loader2 className="w-5 h-5 animate-spin" />
