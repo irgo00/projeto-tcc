@@ -3,6 +3,7 @@ import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import VanCard from '../../components/features/VanCard';
 import VanDetailsModal from '../../components/features/VanDetailsModal';
+import RouteMapModal from '../../components/features/RouteMapModal';
 import { Heart, Bell, History, Star, Loader2, Phone, Mail } from 'lucide-react';
 import { avaliacaoService } from '../../services/avaliacaoService';
 import { favoritoService } from '../../services/favoritoService';
@@ -29,6 +30,7 @@ const tipoContatoIcon = (tipo: string) => {
 
 const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
+  const [selectedRouteVan, setSelectedRouteVan] = useState<Van | null>(null);
   const [activeTab, setActiveTab] = useState('favoritos');
 
   // favoritos
@@ -220,7 +222,7 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
                         onViewDetails={setSelectedVan}
                         onToggleFavorite={handleToggleFavorito}
                         isFavorite={true}
-                        onViewRoute={() => {}}
+                        onViewRoute={setSelectedRouteVan}
                       />
                     ))}
                   </div>
@@ -367,6 +369,11 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
         isOpen={!!selectedVan}
         onClose={() => setSelectedVan(null)}
         onFavoritoChange={handleFavoritoChangeModal}
+      />
+      <RouteMapModal
+        van={selectedRouteVan}
+        isOpen={!!selectedRouteVan}
+        onClose={() => setSelectedRouteVan(null)}
       />
 
       <Footer />
