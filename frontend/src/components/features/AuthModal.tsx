@@ -109,8 +109,12 @@ const AuthModal = ({
       newErrors.email = "Email inválido";
     }
 
-    const senhaErro = validateSenha(formData.senha);
-    if (senhaErro) newErrors.senha = senhaErro;
+    if (!isLogin) {
+      const senhaErro = validateSenha(formData.senha);
+      if (senhaErro) newErrors.senha = senhaErro;
+    } else if (!formData.senha) {
+      newErrors.senha = "Senha e obrigatoria";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
