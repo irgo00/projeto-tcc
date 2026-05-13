@@ -57,6 +57,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [togglingVanId, setTogglingVanId] = useState<number | null>(null);
+  const [ajustandoVagasId, setAjustandoVagasId] = useState<number | null>(null);
 
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoRecebida[]>([]);
   const [avaliacoesLoading, setAvaliacoesLoading] = useState(false);
@@ -221,6 +222,23 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
     } catch {
     } finally {
       setTogglingVanId(null);
+    }
+  };
+
+  const handleAjustarVagas = async (van: Van, delta: 1 | -1) => {
+    const atual = van.vagas_disponiveis ?? 0;
+    const total = van.vagas_totais ?? 0;
+    const novoValor = atual + delta;
+    if (novoValor < 0 || novoValor > total) return;
+    setAjustandoVagasId(van.id);
+    try {
+      await vanService.atualizar(van.id, { vagas_disponiveis: novoValor });
+      setVans(prev =>
+        prev.map(v => v.id === van.id ? { ...v, vagas_disponiveis: novoValor } : v)
+      );
+    } catch {
+    } finally {
+      setAjustandoVagasId(null);
     }
   };
 
@@ -519,11 +537,35 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
                           <div className="bg-white p-4 rounded-lg">
                             <p className="text-sm text-gray-600 mb-1">Vagas Disponíveis</p>
-                            <p className="text-2xl font-bold text-green-600">
-                              {van.vagas_disponiveis ?? 0}
-                            </p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <button
+                                onClick={() => handleAjustarVagas(van, -1)}
+                                disabled={
+                                  ajustandoVagasId === van.id ||
+                                  (van.vagas_disponiveis ?? 0) <= 0
+                                }
+                                title="Ocupar 1 vaga"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed transition text-lg font-bold"
+                              >
+                                −
+                              </button>
+                              <span className="text-2xl font-bold text-green-600 min-w-[2ch] text-center">
+                                {ajustandoVagasId === van.id ? '…' : (van.vagas_disponiveis ?? 0)}
+                              </span>
+                              <button
+                                onClick={() => handleAjustarVagas(van, 1)}
+                                disabled={
+                                  ajustandoVagasId === van.id ||
+                                  (van.vagas_disponiveis ?? 0) >= (van.vagas_totais ?? 0)
+                                }
+                                title="Liberar 1 vaga"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-green-50 hover:border-green-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition text-lg font-bold"
+                              >
+                                +
+                              </button>
+                            </div>
                             {van.valor_mensal != null && (
-                              <p className="text-xs text-gray-400 mt-1">
+                              <p className="text-xs text-gray-400 mt-2">
                                 R$ {Number(van.valor_mensal).toFixed(2).replace('.', ',')}/mês
                               </p>
                             )}
