@@ -1,8 +1,18 @@
+export interface Coordenada {
+  nome: string;
+  latitude?: number;
+  longitude?: number;
+  lat?: number;
+  lng?: number;
+  ordem?: number;
+}
+
 export interface Van {
   id: number;
   nome: string;
   prestador: string;
   rota: string;
+  coordenadas?: Coordenada[];
   horario: Partial<Record<"manha" | "tarde" | "noite", string>>;
   vagas: number;
   avaliacao: number;
