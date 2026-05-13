@@ -15,7 +15,7 @@ class FavoritoController extends Controller
 
         $favoritos = $user
             ->favoritos()
-            ->with(['prestador:id,nome', 'avaliacoes'])
+            ->with(['prestador:id,nome', 'avaliacoes', 'coordenadas'])
             ->get()
             ->map(function ($van) {
                 return [
@@ -23,6 +23,12 @@ class FavoritoController extends Controller
                     'nome'            => $van->nome,
                     'prestador'       => $van->prestador->nome,
                     'rota'            => $van->rota,
+                    'coordenadas'     => $van->coordenadas->map(fn($c) => [
+                        'nome'      => $c->nome,
+                        'latitude'  => $c->latitude,
+                        'longitude' => $c->longitude,
+                        'ordem'     => $c->ordem,
+                    ])->values(),
                     'horario'         => $van->horario_formatado,
                     'vagas'           => $van->vagas_disponiveis,
                     'avaliacao'       => $van->avaliacao_media,
