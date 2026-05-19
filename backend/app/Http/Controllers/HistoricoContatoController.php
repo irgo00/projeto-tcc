@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\HistoricoContato;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class HistoricoContatoController extends Controller
 {
-
     public function registrar(Request $request)
     {
         $request->validate([
-            'van_id' => 'required|exists:vans,id',
+            'van_id'       => 'required|exists:rotas,id',
             'tipo_contato' => 'required|in:telefone,email,whatsapp',
         ]);
 
@@ -23,31 +21,26 @@ class HistoricoContatoController extends Controller
         );
 
         return response()->json([
-            'success' => true,
-            'message' => 'Contato registrado!',
-            'historico' => $historico
+            'success'   => true,
+            'message'   => 'Contato registrado!',
+            'historico' => $historico,
         ], 201);
     }
 
     public function index()
     {
-        $historico = HistoricoContato::with(['van:id,nome,prestador_id', 'van.prestador:id,nome'])
+        $historico = HistoricoContato::with(['rota:id,nome,prestador_id', 'rota.prestador:id,nome'])
             ->where('usuario_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(20)
-            ->through(function ($contato) {
-                return [
-                    'id' => $contato->id,
-                    'van' => $contato->van->nome,
-                    'prestador' => $contato->van->prestador->nome,
-                    'tipo_contato' => $contato->tipo_contato,
-                    'data' => $contato->created_at->format('d/m/Y H:i'),
-                ];
-            });
+            ->through(fn($contato) => [
+                'id'           => $contato->id,
+                'van'          => $contato->rota->nome,
+                'prestador'    => $contato->rota->prestador->nome,
+                'tipo_contato' => $contato->tipo_contato,
+                'data'         => $contato->created_at->format('d/m/Y H:i'),
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'historico' => $historico
-        ]);
+        return response()->json(['success' => true, 'historico' => $historico]);
     }
 }
