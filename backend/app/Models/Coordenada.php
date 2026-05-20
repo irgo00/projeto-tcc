@@ -10,7 +10,7 @@ class Coordenada extends Model
     use HasFactory;
 
     protected $fillable = [
-        'van_id',
+        'rota_id',
         'latitude',
         'longitude',
         'nome',
@@ -18,12 +18,12 @@ class Coordenada extends Model
     ];
 
     protected $casts = [
-        'latitude' => 'float',
+        'latitude'  => 'float',
         'longitude' => 'float',
     ];
 
-    public function van()
+    public function rota()
     {
-        return $this->belongsTo(Van::class);
+        return $this->belongsTo(Rota::class, 'rota_id');
     }
 }

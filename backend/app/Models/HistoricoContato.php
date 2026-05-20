@@ -13,7 +13,7 @@ class HistoricoContato extends Model
 
     protected $fillable = [
         'usuario_id',
-        'van_id',
+        'rota_id',
         'tipo_contato',
     ];
 
@@ -22,16 +22,16 @@ class HistoricoContato extends Model
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
-    public function van()
+    public function rota()
     {
-        return $this->belongsTo(Van::class);
+        return $this->belongsTo(Rota::class, 'rota_id');
     }
 
-    public static function registrar(int $usuarioId, int $vanId, string $tipoContato): self
+    public static function registrar(int $usuarioId, int $rotaId, string $tipoContato): self
     {
         return self::create([
             'usuario_id'   => $usuarioId,
-            'van_id'       => $vanId,
+            'rota_id'      => $rotaId,
             'tipo_contato' => $tipoContato,
         ]);
     }

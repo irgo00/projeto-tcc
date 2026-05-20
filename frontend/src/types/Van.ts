@@ -1,10 +1,18 @@
-export interface Coordenada {
-  nome: string;
-  latitude?: number;
-  longitude?: number;
-  lat?: number;
-  lng?: number;
-  ordem?: number;
+export interface VanVeiculoInfo {
+  id: number;
+  modelo: string;
+  marca: string;
+  placa: string;
+  ano?: number;
+  cor?: string;
+  ar_condicionado?: boolean;
+  camera_interna?: boolean;
+  porta_automatica?: boolean;
+  wifi?: boolean;
+  acessibilidade?: boolean;
+  usb_carregador?: boolean;
+  outros_itens?: string;
+  fotos?: Array<{ id: number; url: string; principal: boolean; ordem: number }>;
 }
 
 export interface Van {
@@ -29,6 +37,9 @@ export interface Van {
   vagas_disponiveis?: number;
   valor_mensal?: number;
   ativa?: boolean;
+  van_id?: number;
+  van?: VanVeiculoInfo | null;
+  foto_principal_url?: string;
   criadoEm?: string;
 }
 
@@ -45,4 +56,5 @@ export interface VanFormData {
   valor_mensal: string;
   telefone: string;
   email: string;
+  van_id: string;
 }

@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Van;
+use App\Models\Rota;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class FavoritoController extends Controller
 {
@@ -15,28 +14,21 @@ class FavoritoController extends Controller
 
         $favoritos = $user
             ->favoritos()
-            ->with(['prestador:id,nome', 'avaliacoes', 'coordenadas'])
+            ->with(['prestador:id,nome', 'van.fotos'])
             ->get()
-            ->map(function ($van) {
-                return [
-                    'id'              => $van->id,
-                    'nome'            => $van->nome,
-                    'prestador'       => $van->prestador->nome,
-                    'rota'            => $van->rota,
-                    'coordenadas'     => $van->coordenadas->map(fn($c) => [
-                        'nome'      => $c->nome,
-                        'latitude'  => $c->latitude,
-                        'longitude' => $c->longitude,
-                        'ordem'     => $c->ordem,
-                    ])->values(),
-                    'horario'         => $van->horario_formatado,
-                    'vagas'           => $van->vagas_disponiveis,
-                    'avaliacao'       => $van->avaliacao_media,
-                    'totalAvaliacoes' => $van->total_avaliacoes,
-                    'telefone'        => $van->telefone,
-                    'email'           => $van->email,
-                ];
-            });
+            ->map(fn($rota) => [
+                'id'                 => $rota->id,
+                'nome'               => $rota->nome,
+                'prestador'          => $rota->prestador->nome,
+                'rota'               => $rota->rota,
+                'horario'            => $rota->horario_formatado,
+                'vagas'              => $rota->vagas_disponiveis,
+                'avaliacao'          => $rota->avaliacao_media,
+                'totalAvaliacoes'    => $rota->total_avaliacoes,
+                'telefone'           => $rota->telefone,
+                'email'              => $rota->email,
+                'foto_principal_url' => optional($rota->van)->foto_principal_url,
+            ]);
 
         return response()->json($favoritos);
     }
@@ -44,25 +36,19 @@ class FavoritoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'van_id' => 'required|exists:vans,id',
+            'van_id' => 'required|exists:rotas,id',
         ]);
 
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if ($user->favoritos()->where('van_id', $request->van_id)->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Van já está nos favoritos.'
-            ], 422);
+        if ($user->favoritos()->where('rotas.id', $request->van_id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Rota já está nos favoritos.'], 422);
         }
 
         $user->favoritos()->attach($request->van_id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Van adicionada aos favoritos!'
-        ]);
+        return response()->json(['success' => true, 'message' => 'Rota adicionada aos favoritos!']);
     }
 
     public function destroy($vanId)
@@ -70,19 +56,13 @@ class FavoritoController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if (!$user->favoritos()->where('van_id', $vanId)->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Van não está nos favoritos.'
-            ], 404);
+        if (!$user->favoritos()->where('rotas.id', $vanId)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Rota não está nos favoritos.'], 404);
         }
 
         $user->favoritos()->detach($vanId);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Van removida dos favoritos!'
-        ]);
+        return response()->json(['success' => true, 'message' => 'Rota removida dos favoritos!']);
     }
 
     public function check($vanId)
@@ -90,14 +70,8 @@ class FavoritoController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        $isFavorito = $user
-            ->favoritos()
-            ->where('van_id', $vanId)
-            ->exists();
+        $isFavorito = $user->favoritos()->where('rotas.id', $vanId)->exists();
 
-        return response()->json([
-            'success' => true,
-            'isFavorito' => $isFavorito
-        ]);
+        return response()->json(['success' => true, 'isFavorito' => $isFavorito]);
     }
 }

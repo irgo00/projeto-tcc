@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Van extends Model
 {
@@ -12,72 +13,54 @@ class Van extends Model
 
     protected $fillable = [
         'prestador_id',
-        'nome',
-        'origem',
-        'destino',
-        'instituicao',
-        'rota',
-        'horario_manha',
-        'horario_tarde',
-        'horario_noite',
-        'vagas_totais',
-        'vagas_disponiveis',
-        'valor_mensal',
-        'telefone',
-        'email',
-        'ativa',
+        'modelo',
+        'marca',
+        'placa',
+        'ano',
+        'cor',
+        'descricao',
+        'ar_condicionado',
+        'camera_interna',
+        'porta_automatica',
+        'wifi',
+        'acessibilidade',
+        'usb_carregador',
+        'outros_itens',
     ];
 
     protected $casts = [
-        'ativa' => 'boolean',
-        'valor_mensal' => 'decimal:2',
+        'ar_condicionado'  => 'boolean',
+        'camera_interna'   => 'boolean',
+        'porta_automatica' => 'boolean',
+        'wifi'             => 'boolean',
+        'acessibilidade'   => 'boolean',
+        'usb_carregador'   => 'boolean',
     ];
-
-    /* ======================
-     | RELACIONAMENTOS
-     |======================*/
 
     public function prestador()
     {
         return $this->belongsTo(User::class, 'prestador_id');
     }
 
-    public function avaliacoes()
+    public function fotos()
     {
-        return $this->hasMany(Avaliacao::class);
+        return $this->hasMany(VanFoto::class)->orderBy('ordem');
     }
 
-    public function favoritos()
+    public function rotas()
     {
-        return $this->belongsToMany(User::class, 'favoritos', 'van_id', 'usuario_id');
+        return $this->hasMany(Rota::class, 'van_id');
     }
 
-    public function coordenadas()
+    public function getFotoPrincipalAttribute(): ?VanFoto
     {
-        return $this->hasMany(Coordenada::class);
+        return $this->fotos->firstWhere('principal', true)
+            ?? $this->fotos->first();
     }
 
-    public function getHorarioFormatadoAttribute()
+    public function getFotoPrincipalUrlAttribute(): ?string
     {
-        return collect([
-            'manha' => $this->horario_manha,
-            'tarde' => $this->horario_tarde,
-            'noite' => $this->horario_noite,
-        ])->filter()->all();
-    }
-
-    public function getAvaliacaoMediaAttribute()
-    {
-        return round((float) $this->avaliacoes()->avg('nota'), 1);
-    }
-
-    public function getTotalAvaliacoesAttribute()
-    {
-        return $this->avaliacoes()->count();
-    }
-
-    public function scopeAtivas($query)
-    {
-        return $query->where('ativa', true);
+        $foto = $this->foto_principal;
+        return $foto ? Storage::disk('public')->url($foto->caminho) : null;
     }
 }

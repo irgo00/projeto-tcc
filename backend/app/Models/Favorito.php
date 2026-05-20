@@ -10,7 +10,7 @@ class Favorito extends Model
 
     protected $fillable = [
         'usuario_id',
-        'van_id',
+        'rota_id',
     ];
 
     public function usuario()
@@ -18,8 +18,8 @@ class Favorito extends Model
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
-    public function van()
+    public function rota()
     {
-        return $this->belongsTo(Van::class);
+        return $this->belongsTo(Rota::class, 'rota_id');
     }
 }
