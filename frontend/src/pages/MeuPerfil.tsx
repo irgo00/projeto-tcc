@@ -11,6 +11,7 @@ import type { AuthMode } from "../types";
 
 interface MeuPerfilProps {
   onOpenAuth: (mode: AuthMode) => void;
+  onNavigate?: () => void;
 }
 
 function MeuPerfil({ onOpenAuth }: MeuPerfilProps) {
