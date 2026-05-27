@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   CheckCircle2, Clock, Lock, AlertTriangle, Upload, X,
-  FileText, Car, ShieldCheck, IdCard, File, Loader2,
+  FileText, Car, ShieldCheck, CreditCard, File, Loader2,
   RefreshCw, Eye, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import Button from '../common/Button';
@@ -14,7 +14,7 @@ const TIPOS_OBRIGATORIOS: { tipo: DocumentoTipo; label: string; icon: React.Reac
   {
     tipo: 'cnh',
     label: 'CNH — Carteira Nacional de Habilitação',
-    icon: <IdCard className="w-5 h-5" />,
+    icon: <CreditCard className="w-5 h-5" />,
     desc: 'Carteira válida e dentro do prazo de validade.',
   },
   {

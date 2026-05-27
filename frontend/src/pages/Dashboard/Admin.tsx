@@ -4,7 +4,7 @@ import Footer from '../../components/layout/Footer';
 import {
   Users, FileCheck, Clock, CheckCircle2, XCircle, RefreshCw,
   Eye, Check, X, AlertTriangle, Loader2, Search, Filter,
-  ShieldCheck, ChevronRight, BarChart3, FileText, Car, IdCard,
+  ShieldCheck, ChevronRight, BarChart3, FileText, Car, CreditCard,
 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
@@ -50,7 +50,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 const TIPO_ICONS: Record<string, React.ReactNode> = {
-  cnh:           <IdCard  className="w-4 h-4" />,
+  cnh:           <CreditCard  className="w-4 h-4" />,
   crlv:          <Car     className="w-4 h-4" />,
   antecedentes:  <ShieldCheck className="w-4 h-4" />,
   laudo_tecnico: <FileText className="w-4 h-4" />,
