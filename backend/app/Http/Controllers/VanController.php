@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Validator;
 
 class VanController extends Controller
 {
+    // ─────────────────────────────────────────────────────────────────────────
+    // HELPER INTERNO
+    // ─────────────────────────────────────────────────────────────────────────
+
     private function formatRota(Rota $rota, bool $incluirValor = false): array
     {
         $rota->loadMissing(['prestador', 'coordenadas', 'van.fotos']);
@@ -34,7 +38,7 @@ class VanController extends Controller
             'avaliacao'       => $rota->avaliacao_media,
             'totalAvaliacoes' => $rota->total_avaliacoes,
             'telefone'        => $rota->telefone ?? optional($rota->prestador)->telefone,
-            'email'           => $rota->email ?? optional($rota->prestador)->email,
+            'email'           => $rota->email    ?? optional($rota->prestador)->email,
             'van'             => $rota->van ? [
                 'id'               => $rota->van->id,
                 'modelo'           => $rota->van->modelo,
@@ -60,13 +64,25 @@ class VanController extends Controller
         ];
 
         if ($incluirValor) {
-            $data['valor_mensal'] = $rota->valor_mensal;
-            $data['ativa']        = (bool) $rota->ativa;
+            $data['valor_mensal']       = $rota->valor_mensal;
+            $data['ativa']              = (bool) $rota->ativa;
+            $data['vagas_totais']       = $rota->vagas_totais;
+            $data['vagas_disponiveis']  = $rota->vagas_disponiveis;
+            $data['horario_manha']      = $rota->horario_manha;
+            $data['horario_tarde']      = $rota->horario_tarde;
+            $data['horario_noite']      = $rota->horario_noite;
+            $data['van_id']             = $rota->van_id;
+            $data['criadoEm']           = $rota->created_at->format('d/m/Y');
         }
 
         return $data;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // ROTAS PÚBLICAS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** GET /api/vans — lista todas as rotas ativas */
     public function index()
     {
         $rotas = Rota::with(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos'])
@@ -77,6 +93,7 @@ class VanController extends Controller
         return response()->json(['success' => true, 'vans' => $rotas]);
     }
 
+    /** POST /api/vans/buscar — busca com filtros */
     public function buscar(Request $request)
     {
         $query = Rota::with(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos'])->ativas();
@@ -84,11 +101,9 @@ class VanController extends Controller
         if ($request->filled('origem')) {
             $query->where('origem', 'like', '%' . $request->origem . '%');
         }
-
         if ($request->filled('instituicao')) {
             $query->where('instituicao', 'like', '%' . $request->instituicao . '%');
         }
-
         if ($request->filled('periodo')) {
             $periodo = strtolower($request->periodo);
             if (in_array($periodo, ['manha', 'tarde', 'noite'])) {
@@ -101,8 +116,14 @@ class VanController extends Controller
         return response()->json(['success' => true, 'vans' => $rotas]);
     }
 
+    /** GET /api/vans/{id} — detalhe de uma rota */
     public function show($id)
     {
+        // Segurança extra: se por algum motivo de roteamento chegar 'minhas' aqui, rejeita.
+        if (!is_numeric($id)) {
+            return response()->json(['success' => false, 'message' => 'ID inválido.'], 400);
+        }
+
         $rota = Rota::with(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos'])->find($id);
 
         if (!$rota) {
@@ -112,21 +133,86 @@ class VanController extends Controller
         return response()->json(['success' => true, 'van' => $this->formatRota($rota, true)]);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // ROTAS AUTENTICADAS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/vans/minhas — rotas do prestador autenticado.
+     *
+     * IMPORTANTE: esta rota DEVE ser declarada em api.php ANTES de /vans/{id}.
+     * Se vier depois, o Laravel captura "minhas" como {id} e cai no show() → 404.
+     */
+    public function minhas()
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        if ($user->tipo !== 'prestador') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Apenas prestadores têm acesso a esta funcionalidade.',
+            ], 403);
+        }
+
+        $rotas = Rota::with('van.fotos')
+            ->where('prestador_id', $user->id)
+            ->withTrashed()   // inclui soft-deleted para o prestador ver rotas inativas
+            ->whereNull('deleted_at')  // mas exclui as realmente deletadas
+            ->get()
+            ->map(function (Rota $rota) {
+                return [
+                    'id'                 => $rota->id,
+                    'nome'               => $rota->nome,
+                    'origem'             => $rota->origem,
+                    'destino'            => $rota->destino,
+                    'instituicao'        => $rota->instituicao,
+                    'rota'               => $rota->rota,
+                    'horario'            => $rota->horario_formatado,
+                    'horario_manha'      => $rota->horario_manha,
+                    'horario_tarde'      => $rota->horario_tarde,
+                    'horario_noite'      => $rota->horario_noite,
+                    'vagas_totais'       => $rota->vagas_totais,
+                    'vagas_disponiveis'  => $rota->vagas_disponiveis,
+                    'valor_mensal'       => $rota->valor_mensal,
+                    'telefone'           => $rota->telefone,
+                    'email'              => $rota->email,
+                    'avaliacao'          => $rota->avaliacao_media,
+                    'totalAvaliacoes'    => $rota->total_avaliacoes,
+                    'ativa'              => (bool) $rota->ativa,
+                    'van_id'             => $rota->van_id,
+                    'van'                => $rota->van ? [
+                        'id'     => $rota->van->id,
+                        'modelo' => $rota->van->modelo,
+                        'marca'  => $rota->van->marca,
+                        'placa'  => $rota->van->placa,
+                    ] : null,
+                    'foto_principal_url' => optional($rota->van)->foto_principal_url,
+                    'criadoEm'           => $rota->created_at->format('d/m/Y'),
+                ];
+            });
+
+        return response()->json(['success' => true, 'vans' => $rotas]);
+    }
+
+    /** POST /api/vans — cria nova rota */
     public function store(Request $request)
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        if ($user->tipo !== 'prestador') {
+            return response()->json(['success' => false, 'message' => 'Apenas prestadores podem criar rotas.'], 403);
+        }
+
+        // Bloqueia criação se conta não estiver habilitada
+        // (descomente quando a lógica de habilitação estiver ativa)
         if (!$user->podecriarRotas()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Sua conta precisa ser habilitada antes de criar rotas. '
-                           . 'Envie os documentos obrigatórios e aguarde a aprovação.',
+                        . 'Envie os documentos obrigatórios e aguarde a aprovação.',
             ], 403);
-        }
-        
-        if ($user->tipo !== 'prestador') {
-            return response()->json(['success' => false, 'message' => 'Apenas prestadores podem criar rotas.'], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -160,7 +246,10 @@ class VanController extends Controller
                 ->where('prestador_id', $user->id)
                 ->exists();
             if (!$vanDoUser) {
-                return response()->json(['success' => false, 'message' => 'Van não encontrada ou não pertence a você.'], 422);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Van não encontrada ou não pertence a você.',
+                ], 422);
             }
         }
 
@@ -202,6 +291,7 @@ class VanController extends Controller
         ], 201);
     }
 
+    /** PUT /api/vans/{id} — atualiza uma rota */
     public function update(Request $request, $id)
     {
         /** @var \App\Models\User $user */
@@ -212,38 +302,31 @@ class VanController extends Controller
         if (!$rota) {
             return response()->json(['success' => false, 'message' => 'Rota não encontrada.'], 404);
         }
-
         if ($rota->prestador_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Você não tem permissão para editar esta rota.'], 403);
         }
 
         $validator = Validator::make($request->all(), [
-            'nome'                    => 'sometimes|string|max:255',
-            'origem'                  => 'sometimes|string|max:255',
-            'destino'                 => 'sometimes|string|max:255',
-            'instituicao'             => 'sometimes|string|max:255',
-            'rota'                    => 'sometimes|string|max:500',
-            'van_id'                  => 'nullable|exists:vans,id',
-            'coordenadas'             => 'sometimes|array',
-            'coordenadas.*.nome'      => 'required_with:coordenadas|string',
-            'coordenadas.*.latitude'  => 'required_with:coordenadas|numeric',
-            'coordenadas.*.longitude' => 'required_with:coordenadas|numeric',
-            'coordenadas.*.ordem'     => 'nullable|integer|min:0',
-            'horario_manha'           => 'nullable|date_format:H:i',
-            'horario_tarde'           => 'nullable|date_format:H:i',
-            'horario_noite'           => 'nullable|date_format:H:i',
-            'vagas_disponiveis'       => 'sometimes|integer|min:0',
-            'valor_mensal'            => 'sometimes|numeric|min:0',
-            'telefone'                => 'sometimes|string|max:20',
-            'email'                   => 'sometimes|email',
-            'ativa'                   => 'sometimes|boolean',
+            'nome'              => 'sometimes|string|max:255',
+            'origem'            => 'sometimes|string|max:255',
+            'destino'           => 'sometimes|string|max:255',
+            'instituicao'       => 'sometimes|string|max:255',
+            'rota'              => 'sometimes|string|max:500',
+            'van_id'            => 'nullable|exists:vans,id',
+            'horario_manha'     => 'nullable|date_format:H:i',
+            'horario_tarde'     => 'nullable|date_format:H:i',
+            'horario_noite'     => 'nullable|date_format:H:i',
+            'vagas_disponiveis' => 'sometimes|integer|min:0',
+            'valor_mensal'      => 'sometimes|numeric|min:0',
+            'telefone'          => 'sometimes|string|max:20',
+            'email'             => 'sometimes|email',
+            'ativa'             => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        // Valida que van_id pertence ao prestador autenticado
         if ($request->filled('van_id')) {
             $vanDoUser = \App\Models\Van::where('id', $request->van_id)
                 ->where('prestador_id', $user->id)
@@ -253,20 +336,7 @@ class VanController extends Controller
             }
         }
 
-        $rota->update($request->except('coordenadas'));
-
-        if ($request->has('coordenadas')) {
-            $rota->coordenadas()->delete();
-            foreach ($request->coordenadas as $index => $coord) {
-                $rota->coordenadas()->create([
-                    'nome'      => $coord['nome'],
-                    'latitude'  => $coord['latitude'],
-                    'longitude' => $coord['longitude'],
-                    'ordem'     => $coord['ordem'] ?? $index,
-                ]);
-            }
-        }
-
+        $rota->update($request->all());
         $rota->load(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos']);
 
         return response()->json([
@@ -276,6 +346,7 @@ class VanController extends Controller
         ]);
     }
 
+    /** DELETE /api/vans/{id} — remove uma rota (soft delete) */
     public function destroy($id)
     {
         /** @var \App\Models\User $user */
@@ -286,7 +357,6 @@ class VanController extends Controller
         if (!$rota) {
             return response()->json(['success' => false, 'message' => 'Rota não encontrada.'], 404);
         }
-
         if ($rota->prestador_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Você não tem permissão para deletar esta rota.'], 403);
         }
@@ -294,52 +364,5 @@ class VanController extends Controller
         $rota->delete();
 
         return response()->json(['success' => true, 'message' => 'Rota deletada com sucesso!']);
-    }
-
-    public function minhas()
-    {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-
-        if ($user->tipo !== 'prestador') {
-            return response()->json(['success' => false, 'message' => 'Apenas prestadores têm acesso a esta funcionalidade.'], 403);
-        }
-
-        $rotas = Rota::with('van.fotos')
-            ->where('prestador_id', $user->id)
-            ->get()
-            ->map(function ($rota) {
-                return [
-                    'id'                => $rota->id,
-                    'nome'              => $rota->nome,
-                    'origem'            => $rota->origem,
-                    'destino'           => $rota->destino,
-                    'instituicao'       => $rota->instituicao,
-                    'rota'              => $rota->rota,
-                    'horario'           => $rota->horario_formatado,
-                    'horario_manha'     => $rota->horario_manha,
-                    'horario_tarde'     => $rota->horario_tarde,
-                    'horario_noite'     => $rota->horario_noite,
-                    'vagas_totais'      => $rota->vagas_totais,
-                    'vagas_disponiveis' => $rota->vagas_disponiveis,
-                    'valor_mensal'      => $rota->valor_mensal,
-                    'telefone'          => $rota->telefone,
-                    'email'             => $rota->email,
-                    'avaliacao'         => $rota->avaliacao_media,
-                    'totalAvaliacoes'   => $rota->total_avaliacoes,
-                    'ativa'             => (bool) $rota->ativa && !$rota->deleted_at,
-                    'van_id'            => $rota->van_id,
-                    'van'               => $rota->van ? [
-                        'id'     => $rota->van->id,
-                        'modelo' => $rota->van->modelo,
-                        'marca'  => $rota->van->marca,
-                        'placa'  => $rota->van->placa,
-                    ] : null,
-                    'foto_principal_url' => optional($rota->van)->foto_principal_url,
-                    'criadoEm'          => $rota->created_at->format('d/m/Y'),
-                ];
-            });
-
-        return response()->json(['success' => true, 'vans' => $rotas]);
     }
 }
