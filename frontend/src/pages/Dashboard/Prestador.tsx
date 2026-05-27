@@ -1,16 +1,28 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  Dashboard/Prestador.tsx  (versão atualizada com aba de Habilitação)
+//
+//  MUDANÇAS em relação à versão anterior:
+//   1. Nova aba "Habilitação" com <HabilitacaoSection />
+//   2. Bloqueio de criar rotas enquanto conta não estiver habilitada
+//   3. Banner de alerta persistente quando status_habilitacao !== 'habilitado'
+//
+//  O restante do dashboard (Rotas, Minhas Vans, Avaliações) permanece igual.
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { useState, useEffect } from 'react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import {
   Plus, Edit2, Trash2, Users, Star, TrendingUp, Calendar,
   PowerOff, Power, Loader2, AlertCircle, X, Save, Truck, ImageOff,
-  Wifi, Wind, Camera, Zap, Accessibility, DoorOpen,
+  Wifi, Wind, Camera, Zap, Accessibility, DoorOpen, ShieldAlert,
 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
 import VanVeiculoFormModal from '../../components/features/VanVeiculoFormModal';
 import VanFotosManager from '../../components/features/VanFotosManager';
+import HabilitacaoSection from '../../components/features/HabilitacaoSection';
 import { useAuth } from '../../hooks/useAuth';
 import { vanService } from '../../services/vanService';
 import { vanVeiculoService } from '../../services/vanVeiculoService';
@@ -49,9 +61,13 @@ const CONFORTO_LABELS: Record<string, string> = {
 
 function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const { user } = useAuth();
+
+  // Verifica se a conta está habilitada (campo vindo do backend via /me)
+  const habilitado = (user as any)?.status_habilitacao === 'habilitado';
+
   const [activeTab, setActiveTab] = useState('rotas');
 
-  // --- ROTAS ---
+  // ── rotas ──
   const [vans, setVans] = useState<Van[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -67,6 +83,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const [togglingVanId, setTogglingVanId] = useState<number | null>(null);
   const [ajustandoVagasId, setAjustandoVagasId] = useState<number | null>(null);
 
+  // ── veículos ──
   const [veiculos, setVeiculos] = useState<VanVeiculo[]>([]);
   const [veiculosLoading, setVeiculosLoading] = useState(false);
   const [veiculosError, setVeiculosError] = useState<string | null>(null);
@@ -77,6 +94,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const [deleteVeiculoError, setDeleteVeiculoError] = useState<string | null>(null);
   const [fotoVeiculoId, setFotoVeiculoId] = useState<number | null>(null);
 
+  // ── avaliações ──
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoRecebida[]>([]);
   const [avaliacoesLoading, setAvaliacoesLoading] = useState(false);
   const [avaliacoesError, setAvaliacoesError] = useState<string | null>(null);
@@ -85,7 +103,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
   useEffect(() => {
     if (activeTab === 'avaliacoes' && avaliacoes.length === 0 && !avaliacoesLoading) carregarAvaliacoes();
-    if (activeTab === 'veiculos' && veiculos.length === 0 && !veiculosLoading) carregarVeiculos();
+    if (activeTab === 'veiculos'   && veiculos.length === 0   && !veiculosLoading)   carregarVeiculos();
   }, [activeTab]);
 
   const carregarVans = async () => {
@@ -124,6 +142,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   };
 
   const abrirModalCriar = () => {
+    if (!habilitado) return; // guarda de segurança
     setEditingVan(null);
     setFormData({ ...FORM_VAZIO, telefone: user?.telefone ?? '', email: user?.email ?? '' });
     setFormErrors({}); setFormError(null); setShowModal(true);
@@ -239,7 +258,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
     <div className="min-h-screen bg-gray-50">
       <Header onOpenAuth={onOpenAuth} />
 
-      <div className="bg-linear-to-r from-purple-600 to-purple-800 text-white py-12">
+      <div className="bg-gradient-to-r from-purple-600 to-purple-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold mb-2">Painel do Prestador</h1>
           <p className="text-purple-100">Gerencie suas rotas, veículos e serviços</p>
@@ -248,13 +267,33 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
+        {/* ── banner de conta não habilitada ── */}
+        {!habilitado && (
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-8">
+            <ShieldAlert className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-amber-800">Conta pendente de habilitação</p>
+              <p className="text-sm text-amber-700 mt-0.5">
+                Para criar e gerenciar rotas, você precisa enviar e ter seus documentos aprovados.{' '}
+                <button
+                  onClick={() => setActiveTab('habilitacao')}
+                  className="underline font-medium hover:text-amber-900"
+                >
+                  Acesse a aba Habilitação
+                </button>{' '}
+                para ver o que falta.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Cards de estatísticas */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           {[
             { icon: <Calendar className="w-6 h-6 text-purple-600" />, bg: 'bg-purple-100', valor: loading ? '—' : estatisticas.totalRotas, label: 'Rotas Ativas' },
-            { icon: <Users className="w-6 h-6 text-blue-600" />, bg: 'bg-blue-100', valor: loading ? '—' : estatisticas.totalPassageiros, label: 'Passageiros' },
-            { icon: <Star className="w-6 h-6 text-yellow-600" />, bg: 'bg-yellow-100', valor: loading ? '—' : estatisticas.avaliacaoMedia.toFixed(1), label: 'Avaliação Média' },
-            { icon: <TrendingUp className="w-6 h-6 text-green-600" />, bg: 'bg-green-100', valor: loading ? '—' : `${estatisticas.ocupacaoMedia}%`, label: 'Ocupação Média' },
+            { icon: <Users className="w-6 h-6 text-blue-600" />,      bg: 'bg-blue-100',   valor: loading ? '—' : estatisticas.totalPassageiros, label: 'Passageiros' },
+            { icon: <Star className="w-6 h-6 text-yellow-600" />,     bg: 'bg-yellow-100', valor: loading ? '—' : estatisticas.avaliacaoMedia.toFixed(1), label: 'Avaliação Média' },
+            { icon: <TrendingUp className="w-6 h-6 text-green-600" />,bg: 'bg-green-100',  valor: loading ? '—' : `${estatisticas.ocupacaoMedia}%`, label: 'Ocupação Média' },
           ].map(({ icon, bg, valor, label }) => (
             <div key={label} className="bg-white rounded-xl shadow-md p-6">
               <div className="flex items-center justify-between mb-2">
@@ -267,37 +306,58 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
         </div>
 
         <div className="bg-white rounded-xl shadow-md">
+          {/* abas */}
           <div className="border-b">
-            <div className="flex">
+            <div className="flex overflow-x-auto">
               {[
-                { key: 'rotas',    label: 'Minhas Rotas',  icon: <Calendar className="w-5 h-5" /> },
-                { key: 'veiculos', label: 'Minhas Vans',   icon: <Truck className="w-5 h-5" /> },
-                { key: 'avaliacoes', label: 'Avaliações',  icon: <Star className="w-5 h-5" /> },
-              ].map(({ key, label, icon }) => (
+                { key: 'rotas',       label: 'Minhas Rotas', icon: <Calendar className="w-5 h-5" /> },
+                { key: 'veiculos',    label: 'Minhas Vans',  icon: <Truck className="w-5 h-5" /> },
+                { key: 'avaliacoes',  label: 'Avaliações',   icon: <Star className="w-5 h-5" /> },
+                { key: 'habilitacao', label: 'Habilitação',  icon: <ShieldAlert className="w-5 h-5" />, alert: !habilitado },
+              ].map(({ key, label, icon, alert }) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition ${
+                  className={`flex items-center gap-2 px-6 py-4 font-medium transition whitespace-nowrap ${
                     activeTab === key
                       ? 'text-purple-600 border-b-2 border-purple-600'
                       : 'text-gray-600 hover:text-purple-600'
                   }`}
                 >
                   {icon}{label}
+                  {alert && (
+                    <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" title="Ação necessária" />
+                  )}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="p-6">
+
+            {/* ══ ROTAS ══ */}
             {activeTab === 'rotas' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">Gerenciar Rotas{!loading && ` (${vans.length})`}</h2>
-                  <Button variant="primary" onClick={abrirModalCriar} className="flex items-center gap-2">
-                    <Plus className="w-5 h-5" /> Nova Rota
+                  <Button
+                    variant="primary"
+                    onClick={habilitado ? abrirModalCriar : () => setActiveTab('habilitacao')}
+                    className="flex items-center gap-2"
+                    title={!habilitado ? 'Complete a habilitação para criar rotas' : ''}
+                  >
+                    <Plus className="w-5 h-5" />
+                    {habilitado ? 'Nova Rota' : 'Habilitar conta'}
                   </Button>
                 </div>
+
+                {!habilitado && (
+                  <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 text-sm text-amber-700">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    Você precisa concluir a habilitação da conta antes de criar rotas.{' '}
+                    <button onClick={() => setActiveTab('habilitacao')} className="underline font-medium ml-1">Ver habilitação</button>
+                  </div>
+                )}
 
                 {loading && <div className="flex items-center justify-center py-16 gap-3 text-gray-500"><Loader2 className="w-6 h-6 animate-spin" /> Carregando rotas...</div>}
 
@@ -312,8 +372,14 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                   <div className="text-center py-16">
                     <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhuma rota cadastrada ainda</h3>
-                    <p className="text-gray-600 mb-6">Adicione sua primeira rota para aparecer nas buscas.</p>
-                    <Button variant="primary" onClick={abrirModalCriar}><Plus className="w-4 h-4 mr-2" />Cadastrar Primeira Rota</Button>
+                    <p className="text-gray-600 mb-6">
+                      {habilitado
+                        ? 'Adicione sua primeira rota para aparecer nas buscas.'
+                        : 'Conclua sua habilitação para poder criar rotas.'}
+                    </p>
+                    {habilitado && (
+                      <Button variant="primary" onClick={abrirModalCriar}><Plus className="w-4 h-4 mr-2" />Cadastrar Primeira Rota</Button>
+                    )}
                   </div>
                 )}
 
@@ -337,7 +403,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                               {van.van && <p className="text-xs text-purple-500 mt-0.5">{van.van.modelo} {van.van.marca} · {van.van.placa}</p>}
                             </div>
                           </div>
-
                           <div className="flex gap-2 flex-shrink-0 ml-4">
                             <button onClick={() => abrirModalEditar(van)} title="Editar" className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"><Edit2 className="w-5 h-5" /></button>
                             <button onClick={() => handleToggleAtiva(van)} disabled={togglingVanId === van.id} title={van.ativa !== false ? 'Desativar' : 'Ativar'} className={`p-2 rounded-lg transition ${van.ativa !== false ? 'text-orange-500 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50'}`}>
@@ -390,6 +455,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
               </div>
             )}
 
+            {/* ══ VEÍCULOS ══ */}
             {activeTab === 'veiculos' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
@@ -398,16 +464,13 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                     <Plus className="w-5 h-5" /> Cadastrar Van
                   </Button>
                 </div>
-
                 {veiculosLoading && <div className="flex items-center justify-center py-16 gap-3 text-gray-500"><Loader2 className="w-6 h-6 animate-spin" /> Carregando veículos...</div>}
-
                 {!veiculosLoading && veiculosError && (
                   <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />{veiculosError}
                     <button onClick={carregarVeiculos} className="ml-auto underline text-sm">Tentar novamente</button>
                   </div>
                 )}
-
                 {!veiculosLoading && !veiculosError && veiculos.length === 0 && (
                   <div className="text-center py-16">
                     <Truck className="w-16 h-16 mx-auto text-gray-300 mb-4" />
@@ -416,38 +479,27 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                     <Button variant="primary" onClick={() => { setEditandoVeiculo(null); setShowVeiculoForm(true); }}><Plus className="w-4 h-4 mr-2" />Cadastrar Primeira Van</Button>
                   </div>
                 )}
-
                 {!veiculosLoading && !veiculosError && veiculos.length > 0 && (
                   <div className="grid md:grid-cols-2 gap-6">
                     {veiculos.map(veiculo => (
                       <div key={veiculo.id} className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-                        {/* Foto principal do veículo */}
                         <div className="relative h-40 bg-gray-200">
-                          {veiculo.foto_principal_url ? (
-                            <img src={veiculo.foto_principal_url} alt={veiculo.modelo} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                              <ImageOff className="w-8 h-8 mb-1" />
-                              <span className="text-xs">Sem foto</span>
-                            </div>
-                          )}
+                          {veiculo.foto_principal_url
+                            ? <img src={veiculo.foto_principal_url} alt={veiculo.modelo} className="w-full h-full object-cover" />
+                            : <div className="flex flex-col items-center justify-center h-full text-gray-400"><ImageOff className="w-8 h-8 mb-1" /><span className="text-xs">Sem foto</span></div>}
                           <div className="absolute top-2 right-2 flex gap-1.5">
                             <button onClick={() => { setEditandoVeiculo(veiculo); setShowVeiculoForm(true); }} className="bg-white/90 hover:bg-white text-purple-600 p-1.5 rounded-lg shadow transition" title="Editar"><Edit2 className="w-4 h-4" /></button>
                             <button onClick={() => { setDeletingVeiculoId(veiculo.id); setDeleteVeiculoError(null); }} className="bg-white/90 hover:bg-white text-red-600 p-1.5 rounded-lg shadow transition" title="Excluir"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </div>
-
                         <div className="p-4">
                           <div className="mb-3">
                             <h3 className="font-bold text-gray-900 text-lg">{veiculo.modelo} <span className="font-normal text-gray-600">{veiculo.marca}</span></h3>
                             <div className="flex items-center gap-3 text-sm text-gray-600 mt-0.5">
                               <span className="font-mono bg-gray-200 px-2 py-0.5 rounded text-xs font-semibold">{veiculo.placa}</span>
-                              <span>{veiculo.ano}</span>
-                              <span>{veiculo.cor}</span>
+                              <span>{veiculo.ano}</span><span>{veiculo.cor}</span>
                             </div>
                           </div>
-
-                          {/* Confortos */}
                           {Object.entries(CONFORTO_LABELS).some(([k]) => (veiculo as any)[k]) && (
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {Object.entries(CONFORTO_LABELS).filter(([k]) => (veiculo as any)[k]).map(([k, l]) => (
@@ -457,8 +509,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                               ))}
                             </div>
                           )}
-
-                          {/* Gerenciar fotos */}
                           {fotoVeiculoId === veiculo.id ? (
                             <div className="border-t pt-3 mt-3">
                               <div className="flex items-center justify-between mb-2">
@@ -479,13 +529,11 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                               {veiculo.fotos.length > 0 ? `Gerenciar fotos (${veiculo.fotos.length}/5)` : '+ Adicionar fotos'}
                             </button>
                           )}
-
                           <div className="flex items-center justify-between mt-3 pt-3 border-t text-xs text-gray-500">
                             <span>{veiculo.total_rotas} rota{veiculo.total_rotas !== 1 ? 's' : ''} vinculada{veiculo.total_rotas !== 1 ? 's' : ''}</span>
                             <span>Cadastrado em {veiculo.criadoEm}</span>
                           </div>
                         </div>
-
                         {deletingVeiculoId === veiculo.id && (
                           <div className="mx-4 mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
                             <p className="text-red-700 text-sm font-medium mb-2">Excluir "{veiculo.modelo} {veiculo.marca}"?</p>
@@ -503,6 +551,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
               </div>
             )}
 
+            {/* ══ AVALIAÇÕES ══ */}
             {activeTab === 'avaliacoes' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Avaliações Recebidas{!avaliacoesLoading && ` (${avaliacoes.length})`}</h2>
@@ -528,49 +577,32 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
               </div>
             )}
 
+            {/* ══ HABILITAÇÃO ══ */}
+            {activeTab === 'habilitacao' && <HabilitacaoSection />}
+
           </div>
         </div>
       </div>
 
+      {/* modal rota */}
       <Modal isOpen={showModal} onClose={() => !formLoading && setShowModal(false)} title={editingVan ? `Editar: ${editingVan.nome}` : 'Nova Rota'} size="md">
         <div className="space-y-4">
           <Input label="Nome da Rota" value={formData.nome} error={formErrors.nome} placeholder="Ex: Van Escolar Central" required onChange={e => setField('nome', e.target.value)} />
-
           <div className="grid grid-cols-2 gap-4">
             <Input label="Origem" value={formData.origem} error={formErrors.origem} placeholder="Ex: Centro" required onChange={e => setField('origem', e.target.value)} />
             <Input label="Destino" value={formData.destino} error={formErrors.destino} placeholder="Ex: UNICENTRO" required onChange={e => setField('destino', e.target.value)} />
           </div>
-
           <Input label="Instituição de Ensino" value={formData.instituicao} error={formErrors.instituicao} placeholder="Ex: UNICENTRO, IFPR..." required onChange={e => setField('instituicao', e.target.value)} />
-
           <Input label="Descrição da Rota" value={formData.rota} error={formErrors.rota} placeholder="Ex: Centro → UNICENTRO, passando pela Av. Brasil" required onChange={e => setField('rota', e.target.value)} />
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Van (veículo) <span className="text-gray-400 font-normal">(opcional)</span>
-            </label>
-            {veiculos.length === 0 ? (
-              <p className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                Nenhuma van cadastrada.{' '}
-                <button type="button" onClick={() => { setShowModal(false); setActiveTab('veiculos'); }} className="text-purple-600 hover:underline font-medium">Cadastre uma van</button>
-                {' '}e volte aqui.
-              </p>
-            ) : (
-              <select
-                value={formData.van_id}
-                onChange={e => setField('van_id', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-              >
-                <option value="">— Selecionar van —</option>
-                {veiculos.map(v => (
-                  <option key={v.id} value={String(v.id)}>
-                    {v.modelo} {v.marca} · {v.placa} ({v.ano})
-                  </option>
-                ))}
-              </select>
-            )}
+            <label className="block text-sm font-medium text-gray-700 mb-1">Van (veículo) <span className="text-gray-400 font-normal">(opcional)</span></label>
+            {veiculos.length === 0
+              ? <p className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">Nenhuma van cadastrada. <button type="button" onClick={() => { setShowModal(false); setActiveTab('veiculos'); }} className="text-purple-600 hover:underline font-medium">Cadastre uma van</button> e volte aqui.</p>
+              : <select value={formData.van_id} onChange={e => setField('van_id', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white">
+                  <option value="">— Selecionar van —</option>
+                  {veiculos.map(v => <option key={v.id} value={String(v.id)}>{v.modelo} {v.marca} · {v.placa} ({v.ano})</option>)}
+                </select>}
           </div>
-
           <div>
             <p className="text-gray-700 font-medium mb-2">Horários <span className="text-red-500">*</span><span className="text-gray-400 font-normal text-sm ml-1">(ao menos um)</span></p>
             <div className="grid grid-cols-3 gap-3">
@@ -580,23 +612,15 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
             </div>
             {formErrors.horarios && <p className="text-red-500 text-sm mt-1">{formErrors.horarios}</p>}
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <Input label="Vagas Totais" type="number" value={formData.vagas_totais} error={formErrors.vagas_totais} placeholder="Ex: 15" required onChange={e => setField('vagas_totais', e.target.value)} />
             <Input label="Valor Mensal (R$)" currency value={formData.valor_mensal} placeholder="Ex: 250,00" onChange={e => setField('valor_mensal', e.target.value)} />
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <Input label="Telefone" type="tel" value={formData.telefone} placeholder="(00) 00000-0000" onChange={e => setField('telefone', e.target.value)} />
             <Input label="E-mail" type="email" value={formData.email} placeholder="contato@email.com" onChange={e => setField('email', e.target.value)} />
           </div>
-
-          {formError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />{formError}
-            </div>
-          )}
-
+          {formError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0" />{formError}</div>}
           <div className="flex gap-3 pt-2">
             <Button variant="primary" loading={formLoading} onClick={handleSalvar} className="flex-1 flex items-center justify-center gap-2">
               <Save className="w-4 h-4" />{editingVan ? 'Salvar Alterações' : 'Cadastrar Rota'}

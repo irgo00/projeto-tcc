@@ -1,12 +1,17 @@
 export type AuthMode = 'login' | 'cadastro';
 
 export interface User {
-  id: string;                 // ⬅️ adicione
-  nome?: string;              // ⬅️ torne opcional
+  id: string;
+  nome?: string;
   email: string;
   telefone?: string;
   cpf?: string;
-  tipo?: 'prestador' | 'cliente'; // ⬅️ opcional
+  /** 'cliente' | 'prestador' | 'admin' */
+  tipo?: 'prestador' | 'cliente' | 'admin';
+  /** Presente apenas para prestadores */
+  status_habilitacao?: 'pendente' | 'habilitado' | 'reprovado';
+  email_verificado?: boolean;
+  telefone_verificado?: boolean;
 }
 
 export interface Van {

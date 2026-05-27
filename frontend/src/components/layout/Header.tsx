@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import type { AuthMode } from "../../types";
@@ -19,6 +19,19 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
     setMenuOpen(false);
   };
 
+  const getDashboardPath = () => {
+    if (!user) return "/";
+    if ((user as any).tipo === "admin")     return "/dashboard/admin";
+    if ((user as any).tipo === "prestador") return "/dashboard/prestador";
+    return "/dashboard/cliente";
+  };
+
+  const getDashboardLabel = () => {
+    if (!user) return "Meu Painel";
+    if ((user as any).tipo === "admin") return "Painel Admin";
+    return "Meu Painel";
+  };
+
   const goHome = () => {
     navigate("/");
     setMenuOpen(false);
@@ -28,79 +41,80 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
   const goToComoFunciona = () => {
     navigate("/");
     setTimeout(() => {
-      document
-        .getElementById("como-funciona")
-        ?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
   const goToContato = () => {
     navigate("/");
     setTimeout(() => {
-      document
-        .getElementById("contato")
-        ?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("contato")?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
+
+  const isAdmin = (user as any)?.tipo === "admin";
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center cursor-pointer" onClick={goHome}>
+          {/* Logo */}
+          <div className="flex items-center cursor-pointer gap-2" onClick={goHome}>
             <h1 className="text-2xl font-bold text-purple-600">PBTE</h1>
-            <span className="ml-2 text-sm text-gray-500 hidden sm:block">
-              Transporte Escolar
-            </span>
+            {isAdmin && (
+              <span className="hidden sm:flex items-center gap-1 text-xs font-medium bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                <ShieldCheck className="w-3 h-3" /> Admin
+              </span>
+            )}
+            {!isAdmin && (
+              <span className="ml-1 text-sm text-gray-500 hidden sm:block">
+                Transporte Escolar
+              </span>
+            )}
           </div>
 
+          {/* Nav desktop */}
           <nav className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={goHome}
-              className="text-gray-700 hover:text-purple-600"
-            >
-              Início
-            </button>
-            <button
-              onClick={goToComoFunciona}
-              className="text-gray-700 hover:text-purple-600"
-            >
-              Como Funciona
-            </button>
-            <button
-              onClick={goToContato}
-              className="text-gray-700 hover:text-purple-600"
-            >
-              Contato
-            </button>
+            {/* Admin não precisa de links de conteúdo público */}
+            {!isAdmin && (
+              <>
+                <button onClick={goHome} className="text-gray-700 hover:text-purple-600">
+                  Início
+                </button>
+                <button onClick={goToComoFunciona} className="text-gray-700 hover:text-purple-600">
+                  Como Funciona
+                </button>
+                <button onClick={goToContato} className="text-gray-700 hover:text-purple-600">
+                  Contato
+                </button>
+              </>
+            )}
           </nav>
 
+          {/* Ações desktop */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
                 <button
-                  onClick={() =>
-                    navigate(
-                      user.tipo === "prestador"
-                        ? "/dashboard/prestador"
-                        : "/dashboard/cliente",
-                    )
-                  }
-                  className="text-purple-600 font-medium"
+                  onClick={() => navigate(getDashboardPath())}
+                  className={`font-medium ${isAdmin ? 'text-purple-700' : 'text-purple-600'}`}
                 >
-                  Meu Painel
+                  {getDashboardLabel()}
                 </button>
 
-                <button
-                  onClick={() => navigate("/perfil")}
-                  className="text-gray-700 hover:text-purple-600"
-                >
-                  Perfil
-                </button>
+                {/* Perfil só para não-admin */}
+                {!isAdmin && (
+                  <button
+                    onClick={() => navigate("/perfil")}
+                    className="text-gray-700 hover:text-purple-600"
+                  >
+                    Perfil
+                  </button>
+                )}
 
                 <button
                   onClick={handleLogout}
-                  className="bg-gray-200 px-6 py-2 rounded-lg"
+                  className="bg-gray-200 px-6 py-2 rounded-lg text-gray-700 hover:bg-gray-300 transition"
                 >
                   Sair
                 </button>
@@ -115,7 +129,7 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
                 </button>
                 <button
                   onClick={() => onOpenAuth("cadastro")}
-                  className="bg-purple-600 text-white px-6 py-2 rounded-lg"
+                  className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
                 >
                   Cadastrar
                 </button>
@@ -123,61 +137,55 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
             )}
           </div>
 
+          {/* Hamburguer mobile */}
           <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X /> : <Menu />}
           </button>
         </div>
 
+        {/* Menu mobile */}
         {menuOpen && (
           <div className="md:hidden py-4 space-y-3 border-t">
-            <button onClick={goHome} className="block w-full text-left">
-              Início
-            </button>
-
-            <a href="#como-funciona" className="block">
-              Como Funciona
-            </a>
-
-            <a href="#contato" className="block">
-              Contato
-            </a>
+            {!isAdmin && (
+              <>
+                <button onClick={goHome} className="block w-full text-left text-gray-700">
+                  Início
+                </button>
+                <a href="#como-funciona" className="block text-gray-700">Como Funciona</a>
+                <a href="#contato" className="block text-gray-700">Contato</a>
+              </>
+            )}
 
             {user ? (
               <>
                 <button
-                  onClick={() =>
-                    navigate(
-                      user.tipo === "prestador"
-                        ? "/dashboard/prestador"
-                        : "/dashboard/cliente",
-                    )
-                  }
+                  onClick={() => { navigate(getDashboardPath()); setMenuOpen(false); }}
                   className="block text-purple-600 font-medium"
                 >
-                  Meu Painel
+                  {getDashboardLabel()}
                 </button>
-
-                <button onClick={handleLogout} className="block">
+                {!isAdmin && (
+                  <button
+                    onClick={() => { navigate("/perfil"); setMenuOpen(false); }}
+                    className="block text-gray-700"
+                  >
+                    Perfil
+                  </button>
+                )}
+                <button onClick={handleLogout} className="block text-gray-700">
                   Sair
                 </button>
               </>
             ) : (
               <>
                 <button
-                  onClick={() => {
-                    onOpenAuth("login");
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => { onOpenAuth("login"); setMenuOpen(false); }}
                   className="block text-purple-600 font-medium"
                 >
                   Entrar
                 </button>
-
                 <button
-                  onClick={() => {
-                    onOpenAuth("cadastro");
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => { onOpenAuth("cadastro"); setMenuOpen(false); }}
                   className="block bg-purple-600 text-white px-6 py-2 rounded-lg"
                 >
                   Cadastrar

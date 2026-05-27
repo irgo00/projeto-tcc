@@ -11,48 +11,42 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nome' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'cpf' => 'required|string|size:14|unique:users',
+            'nome'            => 'required|string|max:255',
+            'email'           => 'required|string|email|max:255|unique:users',
+            'cpf'             => 'required|string|size:14|unique:users',
             'data_nascimento' => 'required|date|before:' . now()->subYears(config('app.min_age', 13))->format('Y-m-d'),
-            'telefone' => 'required|string|max:20',
-            'senha' => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&_\-#]/'],
-            'tipo' => 'required|in:cliente,prestador',
+            'telefone'        => 'required|string|max:20',
+            'senha'           => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&_\-#]/'],
+            'tipo'            => 'required|in:cliente,prestador',   // admin só via seeder/tinker
         ], [
             'data_nascimento.before' => 'É necessário ter pelo menos 13 anos para criar uma conta.',
-            'cpf.size' => 'CPF inválido.',
-            'cpf.unique' => 'Este CPF já está cadastrado.',
-            'email.unique' => 'Este email já está cadastrado.',
-            'senha.min' => 'A senha deve ter no mínimo 8 caracteres.',
+            'cpf.size'    => 'CPF inválido.',
+            'cpf.unique'  => 'Este CPF já está cadastrado.',
+            'email.unique'=> 'Este email já está cadastrado.',
+            'senha.min'   => 'A senha deve ter no mínimo 8 caracteres.',
             'senha.regex' => 'A senha deve conter maiúscula, minúscula, número e caractere especial (@$!%*?&_-#).',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
         if (!$this->validarCPF($request->cpf)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'CPF inválido.'
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'CPF inválido.'], 422);
         }
 
         $user = User::create([
-            'nome' => $request->nome,
-            'email' => $request->email,
-            'cpf' => $request->cpf,
+            'nome'            => $request->nome,
+            'email'           => $request->email,
+            'cpf'             => $request->cpf,
             'data_nascimento' => $request->data_nascimento,
-            'telefone' => $request->telefone,
-            'password' => Hash::make($request->senha),
-            'tipo' => $request->tipo,
+            'telefone'        => $request->telefone,
+            'password'        => Hash::make($request->senha),
+            'tipo'            => $request->tipo,
+            // novos campos — default definido na migration
         ]);
 
         $token = JWTAuth::fromUser($user);
@@ -60,15 +54,8 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Usuário cadastrado com sucesso!',
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'nome' => $user->nome,
-                'email' => $user->email,
-                'cpf' => $user->cpf,
-                'telefone' => $user->telefone,
-                'tipo' => $user->tipo,
-            ]
+            'token'   => $token,
+            'user'    => $this->formatUser($user),
         ], 201);
     }
 
@@ -80,22 +67,13 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
-        $credentials = [
-            'email' => $request->email,
-            'password' => $request->senha,
-        ];
+        $credentials = ['email' => $request->email, 'password' => $request->senha];
 
         if (!$token = JWTAuth::attempt($credentials)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email ou senha incorretos.'
-            ], 401);
+            return response()->json(['success' => false, 'message' => 'Email ou senha incorretos.'], 401);
         }
 
         /** @var \App\Models\User $user */
@@ -103,26 +81,15 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'nome' => $user->nome,
-                'email' => $user->email,
-                'cpf' => $user->cpf,
-                'telefone' => $user->telefone,
-                'tipo' => $user->tipo,
-            ]
+            'token'   => $token,
+            'user'    => $this->formatUser($user),
         ]);
     }
 
     public function logout()
     {
         JWTAuth::invalidate(JWTAuth::getToken());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Logout realizado com sucesso!'
-        ]);
+        return response()->json(['success' => true, 'message' => 'Logout realizado com sucesso!']);
     }
 
     public function me()
@@ -132,15 +99,9 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'user' => [
-                'id' => $user->id,
-                'nome' => $user->nome,
-                'email' => $user->email,
-                'cpf' => $user->cpf,
-                'telefone' => $user->telefone,
+            'user'    => array_merge($this->formatUser($user), [
                 'data_nascimento' => $user->data_nascimento->format('Y-m-d'),
-                'tipo' => $user->tipo,
-            ]
+            ]),
         ]);
     }
 
@@ -149,16 +110,13 @@ class AuthController extends Controller
         $user = auth()->user();
 
         $validator = Validator::make($request->all(), [
-            'nome' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'nome'     => 'sometimes|string|max:255',
+            'email'    => 'sometimes|email|unique:users,email,' . $user->id,
             'telefone' => 'sometimes|string|max:20',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
         $user->update($request->only(['nome', 'email', 'telefone']));
@@ -166,14 +124,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Perfil atualizado com sucesso!',
-            'user' => [
-                'id' => $user->id,
-                'nome' => $user->nome,
-                'email' => $user->email,
-                'cpf' => $user->cpf,
-                'telefone' => $user->telefone,
-                'tipo' => $user->tipo,
-            ]
+            'user'    => $this->formatUser($user),
         ]);
     }
 
@@ -181,39 +132,52 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'senha_atual' => 'required|string',
-            'nova_senha' => ['required', 'string', 'min:8', 'different:senha_atual', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&_\-#]/'],
+            'nova_senha'  => ['required', 'string', 'min:8', 'different:senha_atual', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&_\-#]/'],
         ], [
-            'nova_senha.min' => 'A nova senha deve ter no mínimo 8 caracteres.',
+            'nova_senha.min'       => 'A nova senha deve ter no mínimo 8 caracteres.',
             'nova_senha.different' => 'A nova senha deve ser diferente da senha atual.',
-            'nova_senha.regex' => 'A nova senha deve conter maiúscula, minúscula, número e caractere especial (@$!%*?&_-#).',
+            'nova_senha.regex'     => 'A nova senha deve conter maiúscula, minúscula, número e caractere especial (@$!%*?&_-#).',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
         $user = auth()->user();
 
         if (!Hash::check($request->senha_atual, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Senha atual incorreta.'
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'Senha atual incorreta.'], 422);
         }
 
         $user->password = Hash::make($request->nova_senha);
         $user->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Senha alterada com sucesso!'
-        ]);
+        return response()->json(['success' => true, 'message' => 'Senha alterada com sucesso!']);
     }
 
-    private function validarCPF($cpf)
+    // ─── helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Formata o objeto User para retorno na API.
+     * Inclui os novos campos de habilitação.
+     */
+    private function formatUser(User $user): array
+    {
+        return [
+            'id'                   => $user->id,
+            'nome'                 => $user->nome,
+            'email'                => $user->email,
+            'cpf'                  => $user->cpf,
+            'telefone'             => $user->telefone,
+            'tipo'                 => $user->tipo,
+            // novos campos
+            'status_habilitacao'   => $user->status_habilitacao  ?? 'pendente',
+            'email_verificado'     => (bool) ($user->email_verificado  ?? false),
+            'telefone_verificado'  => (bool) ($user->telefone_verificado ?? false),
+        ];
+    }
+
+    private function validarCPF($cpf): bool
     {
         $cpf = preg_replace('/[^0-9]/', '', $cpf);
 
@@ -226,9 +190,7 @@ class AuthController extends Controller
                 $d += $cpf[$c] * (($t + 1) - $c);
             }
             $d = ((10 * $d) % 11) % 10;
-            if ($cpf[$c] != $d) {
-                return false;
-            }
+            if ($cpf[$c] != $d) return false;
         }
 
         return true;

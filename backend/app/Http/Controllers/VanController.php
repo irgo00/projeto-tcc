@@ -117,6 +117,14 @@ class VanController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        if (!$user->podecriarRotas()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sua conta precisa ser habilitada antes de criar rotas. '
+                           . 'Envie os documentos obrigatórios e aguarde a aprovação.',
+            ], 403);
+        }
+        
         if ($user->tipo !== 'prestador') {
             return response()->json(['success' => false, 'message' => 'Apenas prestadores podem criar rotas.'], 403);
         }
