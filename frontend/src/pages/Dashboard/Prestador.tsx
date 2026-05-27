@@ -378,7 +378,9 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                         : 'Conclua sua habilitação para poder criar rotas.'}
                     </p>
                     {habilitado && (
-                      <Button variant="primary" onClick={abrirModalCriar}><Plus className="w-4 h-4 mr-2" />Cadastrar Primeira Rota</Button>
+                      <Button variant="primary" className="flex items-center gap-2 mx-auto" onClick={abrirModalCriar}>
+                        <Plus className="w-4 h-4 mr-2" />Cadastrar Primeira Rota
+                      </Button>
                     )}
                   </div>
                 )}
@@ -476,7 +478,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                     <Truck className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhuma van cadastrada</h3>
                     <p className="text-gray-600 mb-6">Cadastre suas vans para vinculá-las às rotas.</p>
-                    <Button variant="primary" onClick={() => { setEditandoVeiculo(null); setShowVeiculoForm(true); }}><Plus className="w-4 h-4 mr-2" />Cadastrar Primeira Van</Button>
+                    <Button variant="primary" className="flex items-center gap-2 mx-auto" onClick={() => { setEditandoVeiculo(null); setShowVeiculoForm(true); }}><Plus className="w-4 h-4 mr-2" />Cadastrar Primeira Van</Button>
                   </div>
                 )}
                 {!veiculosLoading && !veiculosError && veiculos.length > 0 && (
