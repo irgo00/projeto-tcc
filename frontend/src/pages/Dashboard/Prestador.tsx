@@ -597,13 +597,29 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
           <Input label="Instituição de Ensino" value={formData.instituicao} error={formErrors.instituicao} placeholder="Ex: UNICENTRO, IFPR..." required onChange={e => setField('instituicao', e.target.value)} />
           <Input label="Descrição da Rota" value={formData.rota} error={formErrors.rota} placeholder="Ex: Centro → UNICENTRO, passando pela Av. Brasil" required onChange={e => setField('rota', e.target.value)} />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Van (veículo) <span className="text-gray-400 font-normal">(opcional)</span></label>
-            {veiculos.length === 0
-              ? <p className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">Nenhuma van cadastrada. <button type="button" onClick={() => { setShowModal(false); setActiveTab('veiculos'); }} className="text-purple-600 hover:underline font-medium">Cadastre uma van</button> e volte aqui.</p>
-              : <select value={formData.van_id} onChange={e => setField('van_id', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white">
-                  <option value="">— Selecionar van —</option>
-                  {veiculos.map(v => <option key={v.id} value={String(v.id)}>{v.modelo} {v.marca} · {v.placa} ({v.ano})</option>)}
-                </select>}
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Van <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
+            {veiculos.length === 0 ? (
+              <p className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                Nenhuma van cadastrada.{' '}
+                <button type="button" onClick={() => { setShowModal(false); setActiveTab('veiculos'); }} className="text-purple-600 hover:underline font-medium">Cadastre uma van</button>
+                {' '}e volte aqui.
+              </p>
+            ) : (
+              <select
+                value={formData.van_id}
+                onChange={e => setField('van_id', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+              >
+                <option value="">— Selecionar van —</option>
+                {veiculos.map(v => (
+                  <option key={v.id} value={String(v.id)}>
+                    {v.modelo} {v.marca} · {v.placa} ({v.ano})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
             <p className="text-gray-700 font-medium mb-2">Horários <span className="text-red-500">*</span><span className="text-gray-400 font-normal text-sm ml-1">(ao menos um)</span></p>
