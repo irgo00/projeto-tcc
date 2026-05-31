@@ -1,32 +1,50 @@
 <?php
+
 namespace App\Mail;
-use App\Models\{Van, User};
-use Illuminate\Bus\Queueable;
+
+use App\Models\Rota;
+use App\Models\User;
 use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 
 class NovasVagasDisponiveis extends Mailable
 {
-    use Queueable, SerializesModels;
+    protected Rota $rota;
+    protected User $usuario;
 
-    public $van;
-    public $usuario;
-
-    public function __construct(Van $van, User $usuario)
+    public function __construct(Rota $rota, User $usuario)
     {
-        $this->van = $van;
+        $this->rota    = $rota;
         $this->usuario = $usuario;
     }
 
     public function build()
     {
-        return $this->subject('Novas vagas disponíveis!')
+        $horarios = collect([
+            'Manhã' => $this->rota->horario_manha,
+            'Tarde' => $this->rota->horario_tarde,
+            'Noite' => $this->rota->horario_noite,
+        ])->filter()->map(fn ($h) => substr((string) $h, 0, 5))->all();
+
+        $valor = $this->rota->valor_mensal;
+        $valorFormatado = ($valor !== null && (float) $valor > 0)
+            ? 'R$ ' . number_format((float) $valor, 2, ',', '.')
+            : null;
+
+        return $this->subject("Vagas reabriram em {$this->rota->nome}!")
             ->view('emails.novas-vagas')
             ->with([
-                'nomeVan' => $this->van->nome,
-                'rota' => $this->van->rota,
-                'vagas' => $this->van->vagas_disponiveis,
-                'nomeUsuario' => $this->usuario->nome,
+                'nomeUsuario'    => $this->usuario->nome,
+                'nomeRota'       => $this->rota->nome,
+                'descricaoRota'  => $this->rota->rota,
+                'origem'         => $this->rota->origem,
+                'destino'        => $this->rota->destino,
+                'instituicao'    => $this->rota->instituicao,
+                'horarios'       => $horarios,
+                'valorFormatado' => $valorFormatado,
+                'telefone'       => $this->rota->telefone,
+                'emailContato'   => $this->rota->email,
+                'vagas'          => (int) $this->rota->vagas_disponiveis,
+                'urlBusca'       => rtrim(config('app.frontend_url'), '/') . '/busca',
             ]);
     }
 }
