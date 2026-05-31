@@ -10,6 +10,7 @@ use App\Http\Controllers\{
     DashboardController,
     HistoricoContatoController,
     DocumentoController,
+    EmailVerificationController,
 };
 
 /* ==========================================================
@@ -18,6 +19,11 @@ use App\Http\Controllers\{
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
+
+// Confirmação de e-mail via link assinado (público — autenticidade pela assinatura)
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('email.verify');
 
 // ATENÇÃO: rotas estáticas SEMPRE antes de rotas com parâmetro dinâmico {id}
 // Se /vans/{id} vier antes de /vans/minhas ou /vans/buscar,
@@ -44,6 +50,10 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/me',               [AuthController::class, 'me']);
     Route::put('/profile',          [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+
+    // Reenvio do e-mail de verificação (limitado para evitar spam)
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:6,1');
 
     // ── Vans / Rotas ──────────────────────────────────────────────────────────
     // CRÍTICO: /vans/minhas DEVE vir antes de /vans/{id}

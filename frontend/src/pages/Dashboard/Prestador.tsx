@@ -24,6 +24,7 @@ import VanVeiculoFormModal from '../../components/features/VanVeiculoFormModal';
 import VanFotosManager from '../../components/features/VanFotosManager';
 import HabilitacaoSection from '../../components/features/HabilitacaoSection';
 import { useAuth } from '../../hooks/useAuth';
+import { authService } from '../../services/authService';
 import { vanService } from '../../services/vanService';
 import { vanVeiculoService } from '../../services/vanVeiculoService';
 import { avaliacaoService } from '../../services/avaliacaoService';
@@ -60,12 +61,41 @@ const CONFORTO_LABELS: Record<string, string> = {
 };
 
 function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   // Verifica se a conta está habilitada (campo vindo do backend via /me)
   const habilitado = (user as any)?.status_habilitacao === 'habilitado';
 
   const [activeTab, setActiveTab] = useState('rotas');
+
+  // ── feedback do retorno da confirmação de e-mail (?email_verified=...) ──
+  const [emailFeedback, setEmailFeedback] = useState<{ tipo: 'ok' | 'erro' | 'info'; texto: string } | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('email_verified');
+    if (!status) return;
+
+    const mensagens: Record<string, { tipo: 'ok' | 'erro' | 'info'; texto: string }> = {
+      '1':       { tipo: 'ok',   texto: 'E-mail confirmado com sucesso! Sua conta avançou na habilitação.' },
+      already:   { tipo: 'info', texto: 'Seu e-mail já estava confirmado.' },
+      invalid:   { tipo: 'erro', texto: 'Link de confirmação inválido. Reenvie o e-mail de verificação.' },
+      expired:   { tipo: 'erro', texto: 'O link de confirmação expirou. Reenvie o e-mail de verificação.' },
+    };
+
+    setEmailFeedback(mensagens[status] ?? null);
+    setActiveTab('habilitacao');
+
+    // Atualiza o usuário (email_verificado / status_habilitacao) a partir do /me
+    if (status === '1' || status === 'already') {
+      authService.getCurrentUser().then((u) => { if (u) updateUser(u); });
+    }
+
+    // Remove o parâmetro da URL sem recarregar
+    params.delete('email_verified');
+    const novaQuery = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (novaQuery ? `?${novaQuery}` : ''));
+  }, [updateUser]);
 
   // ── rotas ──
   const [vans, setVans] = useState<Van[]>([]);
@@ -266,6 +296,23 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        {/* ── feedback da confirmação de e-mail ── */}
+        {emailFeedback && (
+          <div className={`flex items-start gap-3 rounded-xl px-5 py-4 mb-8 border ${
+            emailFeedback.tipo === 'ok'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : emailFeedback.tipo === 'erro'
+              ? 'bg-red-50 border-red-200 text-red-800'
+              : 'bg-blue-50 border-blue-200 text-blue-800'
+          }`}>
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <p className="text-sm flex-1 min-w-0">{emailFeedback.texto}</p>
+            <button onClick={() => setEmailFeedback(null)} className="flex-shrink-0">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* ── banner de conta não habilitada ── */}
         {!habilitado && (

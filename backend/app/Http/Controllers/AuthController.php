@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\VerificarEmail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -49,11 +52,27 @@ class AuthController extends Controller
             // novos campos — default definido na migration
         ]);
 
+        $emailEnviado = false;
+        if ($user->isPrestador()) {
+            try {
+                Mail::to($user->email)->send(new VerificarEmail($user));
+                $emailEnviado = true;
+            } catch (\Throwable $e) {
+                Log::warning('Falha ao enviar e-mail de verificação no cadastro: ' . $e->getMessage());
+            }
+        }
+
         $token = JWTAuth::fromUser($user);
+
+        $message = $user->isPrestador()
+            ? ($emailEnviado
+                ? 'Cadastro realizado! Enviamos um e-mail para você confirmar seu endereço.'
+                : 'Cadastro realizado! Reenvie o e-mail de confirmação pelo painel para habilitar sua conta.')
+            : 'Usuário cadastrado com sucesso!';
 
         return response()->json([
             'success' => true,
-            'message' => 'Usuário cadastrado com sucesso!',
+            'message' => $message,
             'token'   => $token,
             'user'    => $this->formatUser($user),
         ], 201);
@@ -119,12 +138,31 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
 
+        // Troca de e-mail invalida a verificação anterior
+        $emailMudou = $request->filled('email') && $request->email !== $user->email;
+
         $user->update($request->only(['nome', 'email', 'telefone']));
+
+        if ($emailMudou) {
+            $user->email_verificado = false;
+            $user->save();
+            $user->recalcularHabilitacao();
+
+            if ($user->isPrestador()) {
+                try {
+                    Mail::to($user->email)->send(new VerificarEmail($user));
+                } catch (\Throwable $e) {
+                    Log::warning('Falha ao reenviar verificação após troca de e-mail: ' . $e->getMessage());
+                }
+            }
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Perfil atualizado com sucesso!',
-            'user'    => $this->formatUser($user),
+            'message' => $emailMudou
+                ? 'Perfil atualizado! Confirme o novo e-mail pelo link que enviamos.'
+                : 'Perfil atualizado com sucesso!',
+            'user'    => $this->formatUser($user->fresh()),
         ]);
     }
 

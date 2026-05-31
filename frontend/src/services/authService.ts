@@ -77,6 +77,20 @@ export const authService = {
     }
   },
 
+  async reenviarVerificacaoEmail(): Promise<string> {
+    try {
+      const response = await api.post<{ success: boolean; message: string }>(
+        "/email/verification-notification",
+      );
+      return response.data.message || "E-mail de verificação reenviado.";
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      throw new Error(
+        err.response?.data?.message || "Não foi possível reenviar o e-mail.",
+      );
+    }
+  },
+
   async logout(): Promise<void> {
     try {
       await api.post("/logout");

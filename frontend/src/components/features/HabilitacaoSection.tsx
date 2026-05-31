@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import Button from '../common/Button';
 import { documentoService } from '../../services/documentoService';
+import { authService } from '../../services/authService';
 import type { Documento, ProgressoHabilitacao, DocumentoTipo } from '../../types/Documento';
 
 // ─── constantes ───────────────────────────────────────────────────────────────
@@ -210,6 +211,23 @@ export default function HabilitacaoSection() {
   // expansão de observação
   const [expandedObs, setExpandedObs] = useState<number | null>(null);
 
+  // reenvio de verificação de e-mail
+  const [reenviando, setReenviando] = useState(false);
+  const [reenvioMsg, setReenvioMsg] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
+
+  const reenviarEmail = async () => {
+    setReenviando(true);
+    setReenvioMsg(null);
+    try {
+      const msg = await authService.reenviarVerificacaoEmail();
+      setReenvioMsg({ tipo: 'ok', texto: msg });
+    } catch (e) {
+      setReenvioMsg({ tipo: 'erro', texto: (e as Error).message });
+    } finally {
+      setReenviando(false);
+    }
+  };
+
   const carregar = async () => {
     setLoading(true); setErro(null);
     try {
@@ -248,11 +266,10 @@ export default function HabilitacaoSection() {
   // etapas do stepper
   const etapas = progresso
     ? [
-        { label: 'E-mail verificado',       desc: 'Link de confirmação enviado e validado.',  done: progresso.etapas.email_verificado,     waiting: false },
-        { label: 'Telefone verificado',      desc: 'Código SMS confirmado com sucesso.',        done: progresso.etapas.telefone_verificado,  waiting: false },
-        { label: 'Documentos enviados',      desc: 'CNH, CRLV, laudo e antecedentes enviados.',done: progresso.etapas.documentos_enviados,  waiting: false },
-        { label: 'Documentos aprovados',     desc: 'Aguardando análise da administração.',     done: progresso.etapas.documentos_aprovados, waiting: !progresso.etapas.documentos_aprovados && progresso.etapas.documentos_enviados },
-        { label: 'Perfil 100% validado',     desc: 'Disponível após aprovação dos documentos.',done: progresso.etapas.perfil_validado,      waiting: false },
+        { key: 'email_verificado',    label: 'E-mail verificado',       desc: 'Link de confirmação enviado e validado.',  done: progresso.etapas.email_verificado,     waiting: false },
+        { key: 'documentos_enviados', label: 'Documentos enviados',      desc: 'CNH, CRLV, laudo e antecedentes enviados.',done: progresso.etapas.documentos_enviados,  waiting: false },
+        { key: 'documentos_aprovados',label: 'Documentos aprovados',     desc: 'Aguardando análise da administração.',     done: progresso.etapas.documentos_aprovados, waiting: !progresso.etapas.documentos_aprovados && progresso.etapas.documentos_enviados },
+        { key: 'perfil_validado',     label: 'Perfil 100% validado',     desc: 'Disponível após aprovação dos documentos.',done: progresso.etapas.perfil_validado,      waiting: false },
       ]
     : [];
 
@@ -295,7 +312,7 @@ export default function HabilitacaoSection() {
         <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
           <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-green-800">Conta habilitada! 🎉</p>
+            <p className="font-medium text-green-800">Conta habilitada!</p>
             <p className="text-sm text-green-700 mt-0.5">
               Todos os documentos foram aprovados. Você já pode criar e gerenciar suas rotas.
             </p>
@@ -344,6 +361,27 @@ export default function HabilitacaoSection() {
                       {etapa.label}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">{etapa.desc}</p>
+
+                    {etapa.key === 'email_verificado' && !etapa.done && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={reenviarEmail}
+                          disabled={reenviando}
+                          className="inline-flex items-center gap-1.5 text-xs font-medium text-purple-600 hover:text-purple-700 disabled:opacity-50"
+                        >
+                          {reenviando
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            : <RefreshCw className="w-3.5 h-3.5" />}
+                          Reenviar e-mail de verificação
+                        </button>
+                        {reenvioMsg && (
+                          <p className={`text-xs mt-1 ${reenvioMsg.tipo === 'ok' ? 'text-green-600' : 'text-red-600'}`}>
+                            {reenvioMsg.texto}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* badge */}

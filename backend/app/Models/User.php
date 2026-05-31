@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\URL;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
@@ -83,22 +84,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(DocumentoPrestador::class, 'prestador_id');
     }
 
-    /* ======================
-     | HELPERS DE TIPO
-     |======================*/
-
     public function isPrestador(): bool { return $this->tipo === 'prestador'; }
     public function isCliente(): bool   { return $this->tipo === 'cliente'; }
     public function isAdmin(): bool     { return $this->tipo === 'admin'; }
 
-    /* ======================
-     | HABILITAÇÃO
-     |======================*/
-
-    /**
-     * Calcula e retorna o progresso de habilitação do prestador.
-     * Retorna array com as 5 etapas e o percentual geral.
-     */
     public function progressoHabilitacao(): array
     {
         $documentosEnviados = $this->documentos()->whereIn('status', ['pendente','aprovado','correcao'])->count() >= 4;
@@ -112,8 +101,11 @@ class User extends Authenticatable implements JWTSubject
             'perfil_validado'      => $this->status_habilitacao === 'habilitado',
         ];
 
-        $concluidas = count(array_filter($etapas));
-        $percentual = (int) round(($concluidas / count($etapas)) * 100);
+        $etapasGate = ['email_verificado', 'documentos_enviados', 'documentos_aprovados', 'perfil_validado'];
+        $gate       = array_intersect_key($etapas, array_flip($etapasGate));
+
+        $concluidas = count(array_filter($gate));
+        $percentual = (int) round(($concluidas / count($gate)) * 100);
 
         return [
             'etapas'    => $etapas,
@@ -122,11 +114,49 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    public function recalcularHabilitacao(): void
+    {
+        if (!$this->isPrestador()) {
+            return;
+        }
+
+        $tiposObrigatorios = ['cnh', 'crlv', 'antecedentes', 'laudo_tecnico'];
+
+        $aprovados = $this->documentos()
+            ->where('status', 'aprovado')
+            ->pluck('tipo')
+            ->toArray();
+
+        $todosDocsAprovados = empty(array_diff($tiposObrigatorios, $aprovados));
+        $temReprovado       = $this->documentos()->where('status', 'reprovado')->exists();
+
+        if ($todosDocsAprovados && $this->email_verificado) {
+            $novoStatus = 'habilitado';
+        } elseif ($temReprovado) {
+            $novoStatus = 'reprovado';
+        } else {
+            $novoStatus = 'pendente';
+        }
+
+        if ($this->status_habilitacao !== $novoStatus) {
+            $this->update(['status_habilitacao' => $novoStatus]);
+        }
+    }
+
     /**
      * Verifica se o prestador pode criar rotas.
      */
     public function podecriarRotas(): bool
     {
         return $this->isPrestador() && $this->status_habilitacao === 'habilitado';
+    }
+
+    public function urlVerificacaoEmail(): string
+    {
+        return URL::temporarySignedRoute(
+            'email.verify',
+            now()->addHours(48),
+            ['id' => $this->id, 'hash' => sha1($this->email)],
+        );
     }
 }

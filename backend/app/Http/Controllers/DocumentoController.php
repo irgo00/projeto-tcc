@@ -249,8 +249,8 @@ class DocumentoController extends Controller
             'revisado_em'      => now(),
         ]);
 
-        // Verifica se todos os documentos obrigatórios foram aprovados
-        $this->atualizarStatusHabilitacao($documento->prestador);
+        // Recalcula habilitação (regra centralizada no model: docs + e-mail verificado)
+        $documento->prestador->recalcularHabilitacao();
 
         return response()->json([
             'success'   => true,
@@ -292,7 +292,7 @@ class DocumentoController extends Controller
             'revisado_em'      => now(),
         ]);
 
-        $this->atualizarStatusHabilitacao($documento->prestador);
+        $documento->prestador->recalcularHabilitacao();
 
         return response()->json([
             'success'   => true,
@@ -411,30 +411,6 @@ class DocumentoController extends Controller
     /* ==========================================================
      | PRIVADOS
      |==========================================================*/
-
-    /**
-     * Atualiza status_habilitacao do prestador com base nos documentos.
-     * Regra: todos os 4 tipos obrigatórios aprovados → habilitado.
-     */
-    private function atualizarStatusHabilitacao(User $prestador): void
-    {
-        $tiposObrigatorios = ['cnh', 'crlv', 'antecedentes', 'laudo_tecnico'];
-
-        $aprovados = DocumentoPrestador::where('prestador_id', $prestador->id)
-            ->where('status', 'aprovado')
-            ->pluck('tipo')
-            ->toArray();
-
-        $todosAprovados = empty(array_diff($tiposObrigatorios, $aprovados));
-
-        if ($todosAprovados) {
-            $prestador->update(['status_habilitacao' => 'habilitado']);
-        } elseif (DocumentoPrestador::where('prestador_id', $prestador->id)->where('status', 'reprovado')->exists()) {
-            $prestador->update(['status_habilitacao' => 'reprovado']);
-        } else {
-            $prestador->update(['status_habilitacao' => 'pendente']);
-        }
-    }
 
     private function autorizarAdmin(): void
     {

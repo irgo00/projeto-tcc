@@ -322,14 +322,6 @@ const habilitacaoSteps = [
     icon: Check,
   },
   {
-    title: "Telefone verificado",
-    description: "Código SMS confirmado com sucesso",
-    variant: "done",
-    badge: "Concluído",
-    badgeClass: "bg-emerald-100 text-emerald-700",
-    icon: Check,
-  },
-  {
     title: "Documentos enviados",
     description: "CNH, CRLV, laudo técnico e antecedentes enviados",
     variant: "done",
