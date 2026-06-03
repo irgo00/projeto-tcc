@@ -88,6 +88,16 @@ Desenvolver um sistema web para a centralização de buscas por serviços de tra
 - **Diagrama de Classes**: Estrutura estática do sistema e relacionamentos
 - **Modelo Entidade-Relacionamento (MER/DER)**: Estrutura do banco de dados
 
+## 🔁 Fluxos Principais
+
+Resumo dos fluxos de usuário e interação cobertos pelo projeto:
+
+- Busca e descoberta: usuários (responsáveis/estudantes) procuram vans por instituição, rota e período; resultados paginados são retornados pela API.
+- Reserva/Interesse: usuários podem marcar rotas/vans como favoritas; essa ação registra interesse para receber notificações de vagas.
+- Notificações: quando um prestador atualiza vagas, o sistema notifica usuários interessados por e-mail.
+- Avaliação: clientes autenticados podem avaliar prestadores; o backend valida para evitar avaliações duplicadas.
+- Gestão para prestadores: prestadores autenticados podem criar e gerenciar vans, rotas e vagas via painel ou endpoints API.
+
 ### Principais Entidades
 - **Usuários**: Clientes (responsáveis/estudantes)
 - **Prestadores**: Motoristas de vans escolares

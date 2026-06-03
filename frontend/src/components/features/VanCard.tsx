@@ -31,14 +31,14 @@ const VanCard: React.FC<VanCardProps> = ({ van, onViewDetails, onViewRoute, onTo
           <ImageOff className="w-10 h-10 mb-1" />
           <span className="text-xs">Sem foto</span>
         </div>
-        <button
+        {/* <button
           onClick={() => onToggleFavorite(van.id)}
           className={`absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow transition-colors ${
             isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"
           }`}
         >
           <Heart className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`} />
-        </button>
+        </button> */}
         {van.van && (
           <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
             {van.van.modelo} · {van.van.placa}

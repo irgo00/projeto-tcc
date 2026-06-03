@@ -20,7 +20,6 @@ export interface Van {
   nome: string;
   prestador: string;
   rota: string;
-  coordenadas?: Coordenada[];
   horario: Partial<Record<"manha" | "tarde" | "noite", string>>;
   vagas: number;
   avaliacao: number;
