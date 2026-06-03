@@ -103,6 +103,16 @@ O sistema usa **JWT (JSON Web Tokens)** para autenticação.
 - `GET /api/dashboard/prestador` - Estatísticas do prestador
 - `GET /api/dashboard/cliente` - Dados do cliente (favoritos, histórico)
 
+## 🔁 Fluxos Principais
+
+Principais fluxos de uso tratados pelo backend (API):
+
+- Autenticação: registro (`/api/register`), login (`/api/login`) retornando JWT; endpoints protegidos exigem o token no cabeçalho `Authorization: Bearer <token>`.
+- Gestão de vans (prestador): rotas CRUD para criação, edição, listagem e exclusão de vans; atualizações de vagas disparam notificações para usuários favoritados.
+- Busca e filtros: `/api/vans/buscar` aceita filtros (instituição, rota, período) e retorna resultados paginados.
+- Favoritos e notificações: endpoints para favoritar/checar favoritos; quando vagas são atualizadas, o backend envia e-mails para usuários inscritos.
+- Avaliações: clientes autenticados podem criar avaliações; validação impede avaliações duplicadas por mesmo usuário para a mesma van.
+
 ## 🔒 Regras de Negócio
 
 - ✅ CPF deve ser válido

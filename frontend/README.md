@@ -48,6 +48,16 @@ src/
 🔗 Endpoints da API
 Configurar VITE_API_URL no arquivo .env
 
+## 🔁 Fluxos Principais
+
+Breve resumo dos fluxos de usuário que o frontend implementa:
+
+- Busca e filtragem: o usuário acessa a página de busca, aplica filtros (instituição, período, rota) e visualiza a lista de vans retornadas pela API.
+- Visualização de detalhes: ao selecionar uma van, o usuário vê detalhes, fotos, horários e vagas disponíveis.
+- Autenticação: cadastro/login via JWT; o token é armazenado (localStorage/sessionStorage) e anexado em requisições autenticadas.
+- Favoritos e notificações: usuário autenticado pode favoritar rotas/vans; o frontend envia sinais ao backend para inscrição em notificações por e-mail.
+- Área do prestador: prestadores autenticados podem criar/editar vans, atualizar vagas e fotos através dos formulários disponíveis.
+
 📝 Licença
 TCC - Instituto Federal do Paraná - 2025
 
