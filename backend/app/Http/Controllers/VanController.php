@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rota;
-use App\Models\Coordenada;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -15,7 +15,7 @@ class VanController extends Controller
 
     private function formatRota(Rota $rota, bool $incluirValor = false): array
     {
-        $rota->loadMissing(['prestador', 'coordenadas', 'van.fotos']);
+        $rota->loadMissing(['prestador', 'van.fotos']);
 
         $fotoPrincipalUrl = optional($rota->van)->foto_principal_url;
 
@@ -27,12 +27,6 @@ class VanController extends Controller
             'destino'         => $rota->destino,
             'instituicao'     => $rota->instituicao,
             'rota'            => $rota->rota,
-            'coordenadas'     => $rota->coordenadas->map(fn($c) => [
-                'nome'      => $c->nome,
-                'latitude'  => $c->latitude,
-                'longitude' => $c->longitude,
-                'ordem'     => $c->ordem,
-            ])->values(),
             'horario'         => $rota->horario_formatado,
             'vagas'           => $rota->vagas_disponiveis,
             'avaliacao'       => $rota->avaliacao_media,
@@ -85,7 +79,7 @@ class VanController extends Controller
     /** GET /api/vans — lista todas as rotas ativas */
     public function index()
     {
-        $rotas = Rota::with(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos'])
+        $rotas = Rota::with(['prestador:id,nome,telefone,email', 'van.fotos'])
             ->ativas()
             ->get()
             ->map(fn($rota) => $this->formatRota($rota));
@@ -96,7 +90,7 @@ class VanController extends Controller
     /** POST /api/vans/buscar — busca com filtros */
     public function buscar(Request $request)
     {
-        $query = Rota::with(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos'])->ativas();
+        $query = Rota::with(['prestador:id,nome,telefone,email', 'van.fotos'])->ativas();
 
         if ($request->filled('origem')) {
             $query->where('origem', 'like', '%' . $request->origem . '%');
@@ -124,7 +118,7 @@ class VanController extends Controller
             return response()->json(['success' => false, 'message' => 'ID inválido.'], 400);
         }
 
-        $rota = Rota::with(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos'])->find($id);
+        $rota = Rota::with(['prestador:id,nome,telefone,email', 'van.fotos'])->find($id);
 
         if (!$rota) {
             return response()->json(['success' => false, 'message' => 'Rota não encontrada.'], 404);
@@ -222,11 +216,6 @@ class VanController extends Controller
             'instituicao'             => 'required|string|max:255',
             'rota'                    => 'required|string|max:500',
             'van_id'                  => 'nullable|exists:vans,id',
-            'coordenadas'             => 'nullable|array',
-            'coordenadas.*.nome'      => 'required_with:coordenadas|string',
-            'coordenadas.*.latitude'  => 'required_with:coordenadas|numeric',
-            'coordenadas.*.longitude' => 'required_with:coordenadas|numeric',
-            'coordenadas.*.ordem'     => 'nullable|integer|min:0',
             'horario_manha'           => 'nullable|date_format:H:i',
             'horario_tarde'           => 'nullable|date_format:H:i',
             'horario_noite'           => 'nullable|date_format:H:i',
@@ -271,18 +260,7 @@ class VanController extends Controller
             'email'             => $request->email,
         ]);
 
-        if ($request->filled('coordenadas')) {
-            foreach ($request->coordenadas as $index => $coord) {
-                $rota->coordenadas()->create([
-                    'nome'      => $coord['nome'],
-                    'latitude'  => $coord['latitude'],
-                    'longitude' => $coord['longitude'],
-                    'ordem'     => $coord['ordem'] ?? $index,
-                ]);
-            }
-        }
-
-        $rota->load(['coordenadas', 'van.fotos']);
+        $rota->load(['van.fotos']);
 
         return response()->json([
             'success' => true,
@@ -337,7 +315,7 @@ class VanController extends Controller
         }
 
         $rota->update($request->all());
-        $rota->load(['prestador:id,nome,telefone,email', 'coordenadas', 'van.fotos']);
+        $rota->load(['prestador:id,nome,telefone,email', 'van.fotos']);
 
         return response()->json([
             'success' => true,

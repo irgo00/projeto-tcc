@@ -46,11 +46,6 @@ class Rota extends Model
         return $this->belongsTo(Van::class, 'van_id');
     }
 
-    public function coordenadas()
-    {
-        return $this->hasMany(Coordenada::class, 'rota_id');
-    }
-
     public function avaliacoes()
     {
         return $this->hasMany(Avaliacao::class, 'rota_id');
