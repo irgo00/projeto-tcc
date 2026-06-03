@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Van;
 use App\Models\Rota;
-use App\Models\Coordenada;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -98,10 +97,6 @@ class VanSeeder extends Seeder
             'ativa'             => true,
         ]);
 
-        Coordenada::create(['rota_id' => $rota1->id, 'latitude' => -25.4686, 'longitude' => -51.0848, 'nome' => 'Centro - Praça da República', 'ordem' => 1]);
-        Coordenada::create(['rota_id' => $rota1->id, 'latitude' => -25.4712, 'longitude' => -51.0892, 'nome' => 'Rua Visconde do Rio Branco',   'ordem' => 2]);
-        Coordenada::create(['rota_id' => $rota1->id, 'latitude' => -25.4755, 'longitude' => -51.0945, 'nome' => 'UNICENTRO Campus Santa Cruz',  'ordem' => 3]);
-
         $rota4 = Rota::create([
             'prestador_id'      => $prestador1->id,
             'van_id'            => $veiculo2->id,
@@ -121,10 +116,6 @@ class VanSeeder extends Seeder
             'total_avaliacoes'  => 42,
             'ativa'             => true,
         ]);
-
-        Coordenada::create(['rota_id' => $rota4->id, 'latitude' => -25.4686, 'longitude' => -51.0848, 'nome' => 'Centro - Terminal',      'ordem' => 1]);
-        Coordenada::create(['rota_id' => $rota4->id, 'latitude' => -25.4723, 'longitude' => -51.0901, 'nome' => 'Rua Prudente de Morais', 'ordem' => 2]);
-        Coordenada::create(['rota_id' => $rota4->id, 'latitude' => -25.4755, 'longitude' => -51.0945, 'nome' => 'UNICENTRO Campus',       'ordem' => 3]);
 
         // Rotas do prestador 2 (Maria)
         $rota2 = Rota::create([
@@ -147,10 +138,6 @@ class VanSeeder extends Seeder
             'ativa'             => true,
         ]);
 
-        Coordenada::create(['rota_id' => $rota2->id, 'latitude' => -25.4823, 'longitude' => -51.0756, 'nome' => 'Engenheiro Gutierrez',      'ordem' => 1]);
-        Coordenada::create(['rota_id' => $rota2->id, 'latitude' => -25.4789, 'longitude' => -51.0801, 'nome' => 'Rua Coronel Emílio Gomes', 'ordem' => 2]);
-        Coordenada::create(['rota_id' => $rota2->id, 'latitude' => -25.4652, 'longitude' => -51.0912, 'nome' => 'IFPR Campus Irati',         'ordem' => 3]);
-
         $rota5 = Rota::create([
             'prestador_id'      => $prestador2->id,
             'van_id'            => $veiculo3->id,
@@ -170,10 +157,6 @@ class VanSeeder extends Seeder
             'total_avaliacoes'  => 12,
             'ativa'             => true,
         ]);
-
-        Coordenada::create(['rota_id' => $rota5->id, 'latitude' => -25.4686, 'longitude' => -51.0848, 'nome' => 'Centro',                 'ordem' => 1]);
-        Coordenada::create(['rota_id' => $rota5->id, 'latitude' => -25.4667, 'longitude' => -51.0878, 'nome' => 'Av. Presidente Kennedy', 'ordem' => 2]);
-        Coordenada::create(['rota_id' => $rota5->id, 'latitude' => -25.4652, 'longitude' => -51.0912, 'nome' => 'IFPR',                   'ordem' => 3]);
 
         // Rota do prestador 3 (Pedro)
         $rota3 = Rota::create([
@@ -195,9 +178,5 @@ class VanSeeder extends Seeder
             'total_avaliacoes'  => 18,
             'ativa'             => true,
         ]);
-
-        Coordenada::create(['rota_id' => $rota3->id, 'latitude' => -25.4612, 'longitude' => -51.0723, 'nome' => 'Alto da Glória',     'ordem' => 1]);
-        Coordenada::create(['rota_id' => $rota3->id, 'latitude' => -25.4656, 'longitude' => -51.0789, 'nome' => 'Rua XV de Novembro', 'ordem' => 2]);
-        Coordenada::create(['rota_id' => $rota3->id, 'latitude' => -25.4678, 'longitude' => -51.0834, 'nome' => 'Colégio Estadual',   'ordem' => 3]);
     }
 }
