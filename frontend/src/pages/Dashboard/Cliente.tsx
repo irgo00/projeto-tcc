@@ -3,7 +3,7 @@ import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import VanCard from '../../components/features/VanCard';
 import VanDetailsModal from '../../components/features/VanDetailsModal';
-import { Heart, Bell, History, Star, Loader2, Phone, Mail, AlertCircle, X, MailCheck } from 'lucide-react';
+import { Heart, Bell, History, Star, Loader2, Phone, Mail, AlertCircle, X, MailCheck, RefreshCw } from 'lucide-react';
 import { avaliacaoService } from '../../services/avaliacaoService';
 import { authService } from '../../services/authService';
 import { favoritoService } from '../../services/favoritoService';
@@ -266,7 +266,7 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
                     onClick={() => { setFavoritosCarregados(false); carregarFavoritos(); }}
                     className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium text-sm"
                   >
-                    <Bell className="w-4 h-4" />
+                    <RefreshCw className="w-4 h-4" />
                     Atualizar
                   </button>
                 </div>
