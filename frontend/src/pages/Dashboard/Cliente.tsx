@@ -3,10 +3,12 @@ import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import VanCard from '../../components/features/VanCard';
 import VanDetailsModal from '../../components/features/VanDetailsModal';
-import { Heart, Bell, History, Star, Loader2, Phone, Mail } from 'lucide-react';
+import { Heart, Bell, History, Star, Loader2, Phone, Mail, AlertCircle, X, MailCheck } from 'lucide-react';
 import { avaliacaoService } from '../../services/avaliacaoService';
+import { authService } from '../../services/authService';
 import { favoritoService } from '../../services/favoritoService';
 import { historicoService } from '../../services/historicoService';
+import { useAuth } from '../../hooks/useAuth';
 import type { Van } from '../../types/Van';
 import type { MinhaAvaliacao } from '../../types/Avaliacao';
 import type { HistoricoItem } from '../../types/Historico';
@@ -28,8 +30,51 @@ const tipoContatoIcon = (tipo: string) => {
 };
 
 const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
+  const { user, updateUser } = useAuth();
+  const emailVerificado = user?.email_verificado === true;
+
   const [selectedVan, setSelectedVan] = useState<Van | null>(null);
   const [activeTab, setActiveTab] = useState('favoritos');
+
+  const [emailFeedback, setEmailFeedback] = useState<{ tipo: 'ok' | 'erro' | 'info'; texto: string } | null>(null);
+  const [reenviando, setReenviando] = useState(false);
+  const [reenvioMsg, setReenvioMsg] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('email_verified');
+    if (!status) return;
+
+    const mensagens: Record<string, { tipo: 'ok' | 'erro' | 'info'; texto: string }> = {
+      '1':     { tipo: 'ok',   texto: 'E-mail confirmado com sucesso! Agora você pode salvar rotas nos favoritos.' },
+      already: { tipo: 'info', texto: 'Seu e-mail já estava confirmado.' },
+      invalid: { tipo: 'erro', texto: 'Link de confirmação inválido. Reenvie o e-mail de verificação.' },
+      expired: { tipo: 'erro', texto: 'O link de confirmação expirou. Reenvie o e-mail de verificação.' },
+    };
+
+    setEmailFeedback(mensagens[status] ?? null);
+
+    if (status === '1' || status === 'already') {
+      authService.getCurrentUser().then((u) => { if (u) updateUser(u); });
+    }
+
+    params.delete('email_verified');
+    const novaQuery = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (novaQuery ? `?${novaQuery}` : ''));
+  }, [updateUser]);
+
+  const reenviarEmail = async () => {
+    setReenviando(true);
+    setReenvioMsg(null);
+    try {
+      const msg = await authService.reenviarVerificacaoEmail();
+      setReenvioMsg({ tipo: 'ok', texto: msg });
+    } catch (e) {
+      setReenvioMsg({ tipo: 'erro', texto: (e as Error).message });
+    } finally {
+      setReenviando(false);
+    }
+  };
 
   // favoritos
   const [favoritos, setFavoritos] = useState<Van[]>([]);
@@ -127,6 +172,49 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        {emailFeedback && (
+          <div className={`flex items-start gap-3 rounded-xl px-5 py-4 mb-8 border ${
+            emailFeedback.tipo === 'ok'
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : emailFeedback.tipo === 'erro'
+              ? 'bg-red-50 border-red-200 text-red-800'
+              : 'bg-blue-50 border-blue-200 text-blue-800'
+          }`}>
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <p className="text-sm flex-1 min-w-0">{emailFeedback.texto}</p>
+            <button onClick={() => setEmailFeedback(null)} className="flex-shrink-0">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {user && !emailVerificado && (
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-8">
+            <MailCheck className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-amber-800">Confirme seu e-mail</p>
+              <p className="text-sm text-amber-700 mt-0.5">
+                Para salvar rotas nos favoritos você precisa confirmar seu e-mail. Verifique sua caixa de entrada (ou spam) — o link expira em 48 horas.
+              </p>
+              <div className="mt-2 flex items-center gap-3">
+                <button
+                  onClick={reenviarEmail}
+                  disabled={reenviando}
+                  className="text-sm font-medium text-amber-900 underline hover:text-amber-700 disabled:opacity-60"
+                >
+                  {reenviando ? 'Reenviando...' : 'Reenviar e-mail de verificação'}
+                </button>
+                {reenvioMsg && (
+                  <span className={`text-xs ${reenvioMsg.tipo === 'ok' ? 'text-green-700' : 'text-red-700'}`}>
+                    {reenvioMsg.texto}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-xl shadow-md mb-8">
           <div className="border-b">
             <div className="flex">

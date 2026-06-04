@@ -5,6 +5,7 @@ import Button from '../common/Button';
 import VanFotoCarousel from './VanFotoCarousel';
 import { useAuth } from '../../hooks/useAuth';
 import { avaliacaoService } from '../../services/avaliacaoService';
+import { authService } from '../../services/authService';
 import { favoritoService } from '../../services/favoritoService';
 import { historicoService } from '../../services/historicoService';
 import type { Van } from '../../types/Van';
@@ -41,6 +42,8 @@ const CONFORTO_LABELS: Record<string, string> = {
 const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsModalProps) => {
   const { user } = useAuth();
   const isCliente = user?.tipo === 'cliente';
+  const emailVerificado = user?.email_verificado === true;
+  const podeFavoritar = isCliente && emailVerificado;
 
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoItem[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -56,6 +59,9 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
 
   const [isFavorito, setIsFavorito] = useState(false);
   const [favoritoLoading, setFavoritoLoading] = useState(false);
+  const [favoritoErro, setFavoritoErro] = useState<string | null>(null);
+  const [reenviandoEmail, setReenviandoEmail] = useState(false);
+  const [reenvioEmailMsg, setReenvioEmailMsg] = useState<string | null>(null);
   const [contatoLoading, setContatoLoading] = useState(false);
 
   useEffect(() => {
@@ -68,6 +74,8 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
       setFormError(null);
       setFormSuccess(false);
       setIsFavorito(false);
+      setFavoritoErro(null);
+      setReenvioEmailMsg(null);
       return;
     }
 
@@ -111,6 +119,8 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
 
   const handleToggleFavorito = async () => {
     if (!van) return;
+    setFavoritoErro(null);
+    setReenvioEmailMsg(null);
     setFavoritoLoading(true);
     try {
       if (isFavorito) {
@@ -122,9 +132,29 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
         setIsFavorito(true);
         onFavoritoChange?.(van.id, true);
       }
-    } catch {
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message;
+      if (status === 403) {
+        setFavoritoErro(msg || 'Confirme seu e-mail para salvar rotas nos favoritos.');
+      } else if (msg) {
+        setFavoritoErro(msg);
+      }
     } finally {
       setFavoritoLoading(false);
+    }
+  };
+
+  const reenviarEmailVerificacao = async () => {
+    setReenviandoEmail(true);
+    setReenvioEmailMsg(null);
+    try {
+      const msg = await authService.reenviarVerificacaoEmail();
+      setReenvioEmailMsg(msg);
+    } catch (e) {
+      setReenvioEmailMsg((e as Error).message);
+    } finally {
+      setReenviandoEmail(false);
     }
   };
 
@@ -382,15 +412,48 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
           )}
 
           {isCliente && (
-            <Button
-              variant="outline"
-              loading={favoritoLoading}
-              onClick={handleToggleFavorito}
-              className={`w-full flex items-center justify-center gap-2 transition-colors ${isFavorito ? 'border-red-400 text-red-500 hover:bg-red-50' : 'hover:border-red-400 hover:text-red-500'}`}
-            >
-              <Heart className={`w-5 h-5 ${isFavorito ? 'fill-current' : ''}`} />
-              {isFavorito ? 'Remover dos Favoritos' : 'Salvar nos Favoritos'}
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                loading={favoritoLoading}
+                onClick={handleToggleFavorito}
+                disabled={!podeFavoritar && !isFavorito}
+                className={`w-full flex items-center justify-center gap-2 transition-colors ${
+                  !podeFavoritar && !isFavorito
+                    ? 'opacity-60 cursor-not-allowed'
+                    : isFavorito
+                    ? 'border-red-400 text-red-500 hover:bg-red-50'
+                    : 'hover:border-red-400 hover:text-red-500'
+                }`}
+                title={!podeFavoritar && !isFavorito ? 'Confirme seu e-mail para salvar nos favoritos' : ''}
+              >
+                {!podeFavoritar && !isFavorito ? (
+                  <Lock className="w-5 h-5" />
+                ) : (
+                  <Heart className={`w-5 h-5 ${isFavorito ? 'fill-current' : ''}`} />
+                )}
+                {isFavorito ? 'Remover dos Favoritos' : 'Salvar nos Favoritos'}
+              </Button>
+
+              {(favoritoErro || (!emailVerificado && !isFavorito)) && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2 text-xs space-y-1">
+                  <p>
+                    {favoritoErro ?? 'Confirme seu e-mail para salvar rotas nos favoritos.'}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={reenviarEmailVerificacao}
+                      disabled={reenviandoEmail}
+                      className="font-medium underline hover:text-amber-900 disabled:opacity-60"
+                    >
+                      {reenviandoEmail ? 'Reenviando...' : 'Reenviar e-mail de verificação'}
+                    </button>
+                    {reenvioEmailMsg && <span className="text-amber-700">{reenvioEmailMsg}</span>}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {!user && (

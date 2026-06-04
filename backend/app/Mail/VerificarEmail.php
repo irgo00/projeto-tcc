@@ -20,6 +20,7 @@ class VerificarEmail extends Mailable
             ->view('emails.verificar-email')
             ->with([
                 'nome' => $this->usuario->nome,
+                'tipo' => $this->usuario->tipo,
                 'url'  => $this->usuario->urlVerificacaoEmail(),
             ]);
     }

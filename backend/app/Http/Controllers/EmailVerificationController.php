@@ -11,9 +11,10 @@ class EmailVerificationController extends Controller
 {
     public function verify(Request $request, int $id, string $hash)
     {
-        $destino = rtrim(config('app.frontend_url'), '/') . '/dashboard/prestador';
-
+        $base = rtrim(config('app.frontend_url'), '/');
         $user = User::find($id);
+
+        $destino = $base . '/dashboard/' . ($user && $user->isCliente() ? 'cliente' : 'prestador');
 
         // Link válido, mas usuário inexistente ou hash não confere com o e-mail atual
         if (!$user || !hash_equals(sha1($user->email), (string) $hash)) {

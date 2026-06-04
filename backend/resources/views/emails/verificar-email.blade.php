@@ -10,8 +10,13 @@
     </p>
 
     <p style="margin:0 0 24px; font-size:15px; line-height:1.6; color:#374151;">
-        Para concluir o cadastro como prestador e liberar a criação de rotas,
-        confirme seu endereço de e-mail clicando no botão abaixo.
+        @if($tipo === 'prestador')
+            Para concluir o cadastro como prestador e liberar a criação de rotas,
+            confirme seu endereço de e-mail clicando no botão abaixo.
+        @else
+            Para concluir o cadastro e liberar recursos,
+            confirme seu endereço de e-mail clicando no botão abaixo.
+        @endif
     </p>
 
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">

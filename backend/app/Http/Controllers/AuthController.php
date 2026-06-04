@@ -52,22 +52,18 @@ class AuthController extends Controller
         ]);
 
         $emailEnviado = false;
-        if ($user->isPrestador()) {
-            try {
-                Mail::to($user->email)->send(new VerificarEmail($user));
-                $emailEnviado = true;
-            } catch (\Throwable $e) {
-                Log::warning('Falha ao enviar e-mail de verificação no cadastro: ' . $e->getMessage());
-            }
+        try {
+            Mail::to($user->email)->send(new VerificarEmail($user));
+            $emailEnviado = true;
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao enviar e-mail de verificação no cadastro: ' . $e->getMessage());
         }
 
         $token = JWTAuth::fromUser($user);
 
-        $message = $user->isPrestador()
-            ? ($emailEnviado
-                ? 'Cadastro realizado! Enviamos um e-mail para você confirmar seu endereço.'
-                : 'Cadastro realizado! Reenvie o e-mail de confirmação pelo painel para habilitar sua conta.')
-            : 'Usuário cadastrado com sucesso!';
+        $message = $emailEnviado
+            ? 'Cadastro realizado! Enviamos um e-mail para você confirmar seu endereço.'
+            : 'Cadastro realizado! Reenvie o e-mail de confirmação pelo painel.';
 
         return response()->json([
             'success' => true,
@@ -145,12 +141,10 @@ class AuthController extends Controller
             $user->save();
             $user->recalcularHabilitacao();
 
-            if ($user->isPrestador()) {
-                try {
-                    Mail::to($user->email)->send(new VerificarEmail($user));
-                } catch (\Throwable $e) {
-                    Log::warning('Falha ao reenviar verificação após troca de e-mail: ' . $e->getMessage());
-                }
+            try {
+                Mail::to($user->email)->send(new VerificarEmail($user));
+            } catch (\Throwable $e) {
+                Log::warning('Falha ao reenviar verificação após troca de e-mail: ' . $e->getMessage());
             }
         }
 

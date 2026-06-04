@@ -40,6 +40,14 @@ class FavoritoController extends Controller
 
         $user = auth()->user();
 
+        if ($user->isCliente() && !$user->email_verificado) {
+            return response()->json([
+                'success'             => false,
+                'message'             => 'Confirme seu e-mail para salvar rotas nos favoritos.',
+                'email_verificado'    => false,
+            ], 403);
+        }
+
         if ($user->favoritos()->where('rotas.id', $request->van_id)->exists()) {
             return response()->json(['success' => false, 'message' => 'Rota já está nos favoritos.'], 422);
         }
