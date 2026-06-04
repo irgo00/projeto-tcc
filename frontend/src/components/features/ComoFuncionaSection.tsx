@@ -31,7 +31,7 @@ const ComoFuncionaSection = ({ onOpenAuth }: ComoFuncionaSectionProps) => {
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-3">2. Compare</h3>
           <p className="text-gray-600">
-            Veja todas as vans disponíveis, compare horários, avaliações e visualize as rotas detalhadas no Google Maps.
+            Veja todas as vans disponíveis, compare horários, avaliações e escolha a melhor opção para você.
           </p>
         </div>
 
@@ -41,7 +41,7 @@ const ComoFuncionaSection = ({ onOpenAuth }: ComoFuncionaSectionProps) => {
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-3">3. Contate</h3>
           <p className="text-gray-600">
-            Entre em contato direto com o prestador de serviço através de telefone ou e-mail para confirmar sua vaga.
+            Entre em contato direto com o prestador de serviço através de whatsapp ou e-mail para confirmar sua vaga.
           </p>
         </div>
       </div>

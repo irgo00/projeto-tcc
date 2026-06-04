@@ -13,8 +13,6 @@ import AuthModal from "./components/features/AuthModal";
 import type { AuthMode } from "./types";
 import PainelAdminExemplo from "./pages/PainelAdminExemplo";
 
-// ─── guard simples (sem contexto para não criar dependência circular) ─────────
-
 function useUserTipo(): string | null {
   try {
     const raw = localStorage.getItem("user");
@@ -25,7 +23,6 @@ function useUserTipo(): string | null {
   }
 }
 
-/** Redireciona para o dashboard correto com base no tipo do usuário */
 function DashboardRedirect({ onOpenAuth }: { onOpenAuth: (m: AuthMode) => void }) {
   const tipo = useUserTipo();
   if (tipo === "prestador") return <DashboardPrestador onOpenAuth={onOpenAuth} />;
@@ -34,8 +31,6 @@ function DashboardRedirect({ onOpenAuth }: { onOpenAuth: (m: AuthMode) => void }
   return <Navigate to="/" replace />;
 }
 
-// ─── app ──────────────────────────────────────────────────────────────────────
-
 function App() {
   const [authModal, setAuthModal] = useState<AuthMode | null>(null);
 
@@ -43,20 +38,16 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Públicas */}
           <Route path="/"     element={<Home  onOpenAuth={setAuthModal} />} />
           <Route path="/busca" element={<Busca onOpenAuth={setAuthModal} />} />
           <Route path="/perfil" element={<MeuPerfil onOpenAuth={() => setAuthModal("login")} onNavigate={() => {}} />} />
 
-          {/* Dashboards específicos (mantidos para compatibilidade com links existentes) */}
           <Route path="/dashboard/cliente"   element={<DashboardCliente   onOpenAuth={setAuthModal} />} />
           <Route path="/dashboard/prestador" element={<DashboardPrestador onOpenAuth={setAuthModal} />} />
           <Route path="/dashboard/admin"     element={<DashboardAdmin     onOpenAuth={setAuthModal} />} />
 
-          {/* Rota genérica — redireciona automaticamente pelo tipo */}
-          <Route path="/dashboard" element={<DashboardRedirect onOpenAuth={setAuthModal} />} />
+=          <Route path="/dashboard" element={<DashboardRedirect onOpenAuth={setAuthModal} />} />
 
-          {/* Rota de exemplo */}
           <Route path="/painel-exemplo" element={<PainelAdminExemplo />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

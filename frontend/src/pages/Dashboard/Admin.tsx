@@ -12,15 +12,12 @@ import { adminService } from '../../services/documentoService';
 import type { AdminStats, PrestadorAdmin, Documento, DocumentoStatus } from '../../types/Documento';
 import type { AuthMode } from '../../types';
 
-// ─── tipos locais ─────────────────────────────────────────────────────────────
 
 interface DashboardAdminProps {
   onOpenAuth: (mode: AuthMode) => void;
 }
 
 type Aba = 'overview' | 'prestadores' | 'documentos';
-
-// ─── helpers visuais ──────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, string> = {
@@ -56,8 +53,6 @@ const TIPO_ICONS: Record<string, React.ReactNode> = {
   laudo_tecnico: <FileText className="w-4 h-4" />,
   outros:        <FileText className="w-4 h-4" />,
 };
-
-// ─── modal de revisão de documento ───────────────────────────────────────────
 
 interface ReviewModalProps {
   doc: Documento | null;
@@ -124,7 +119,6 @@ function ReviewModal({ doc, isOpen, onClose, onAtualizado }: ReviewModalProps) {
           </div>
         </div>
 
-        {/* pré-visualização */}
         <div className="border border-gray-200 rounded-xl bg-gray-50 p-8 text-center">
           <FileText className="w-10 h-10 text-purple-300 mx-auto mb-2" />
           <p className="text-sm text-gray-500 mb-3">{doc.nome_original}</p>
@@ -138,7 +132,6 @@ function ReviewModal({ doc, isOpen, onClose, onAtualizado }: ReviewModalProps) {
           </a>
         </div>
 
-        {/* observação anterior */}
         {doc.observacao_admin && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-sm text-amber-800">
             <p className="font-medium mb-1">Observação anterior:</p>
@@ -146,7 +139,6 @@ function ReviewModal({ doc, isOpen, onClose, onAtualizado }: ReviewModalProps) {
           </div>
         )}
 
-        {/* ação */}
         {doc.status !== 'aprovado' && (
           <>
             <div>
@@ -219,40 +211,32 @@ function ReviewModal({ doc, isOpen, onClose, onAtualizado }: ReviewModalProps) {
   );
 }
 
-// ─── componente principal ─────────────────────────────────────────────────────
-
 export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
   const [aba, setAba] = useState<Aba>('overview');
 
-  // stats
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // prestadores
   const [prestadores, setPrestadores] = useState<PrestadorAdmin[]>([]);
   const [prestadoresLoading, setPrestadoresLoading] = useState(false);
   const [filtroPrestador, setFiltroPrestador] = useState('');
   const [filtroHab, setFiltroHab] = useState('');
   const [buscaPrestador, setBuscaPrestador] = useState('');
 
-  // documentos
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
   const [filtroStatus, setFiltroStatus] = useState<DocumentoStatus | ''>('');
   const [docReview, setDocReview] = useState<Documento | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
 
-  // prestador selecionado (drill-down)
   const [prestadorSel, setPrestadorSel] = useState<PrestadorAdmin | null>(null);
   const [docsPrestador, setDocsPrestador] = useState<Documento[]>([]);
   const [docsPrestadorLoading, setDocsPrestadorLoading] = useState(false);
 
-  // ── carregamentos ──
-
   const carregarStats = useCallback(async () => {
     setStatsLoading(true);
     try { setStats(await adminService.stats()); }
-    catch { /* silencia */ }
+    catch {  }
     finally { setStatsLoading(false); }
   }, []);
 
@@ -261,7 +245,7 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
     try {
       const r = await adminService.prestadores(filtroHab ? { status_habilitacao: filtroHab } : {});
       setPrestadores(r.data);
-    } catch { /* silencia */ }
+    } catch {  }
     finally { setPrestadoresLoading(false); }
   }, [filtroHab]);
 
@@ -270,7 +254,7 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
     try {
       const r = await adminService.documentos(filtroStatus ? { status: filtroStatus } : {});
       setDocumentos(r.data);
-    } catch { /* silencia */ }
+    } catch {  }
     finally { setDocsLoading(false); }
   }, [filtroStatus]);
 
@@ -279,7 +263,7 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
     try {
       const r = await adminService.documentosPorPrestador(p.id);
       setDocsPrestador(r.documentos);
-    } catch { /* silencia */ }
+    } catch {  }
     finally { setDocsPrestadorLoading(false); }
   };
 
@@ -294,15 +278,11 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
   };
 
   const abrirReview = (doc: Documento) => { setDocReview(doc); setReviewOpen(true); };
-
-  // ── filtro local de prestadores ──
   const prestadoresFiltrados = prestadores.filter(p =>
     !buscaPrestador ||
     p.nome.toLowerCase().includes(buscaPrestador.toLowerCase()) ||
     p.email.toLowerCase().includes(buscaPrestador.toLowerCase())
   );
-
-  // ── render ──
 
   const abas: { id: Aba; label: string; icon: React.ReactNode }[] = [
     { id: 'overview',    label: 'Visão geral',  icon: <BarChart3 className="w-4 h-4" /> },
@@ -314,7 +294,6 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
     <div className="min-h-screen bg-gray-50">
       <Header onOpenAuth={onOpenAuth} />
 
-      {/* hero */}
       <div className="bg-gradient-to-r from-purple-700 to-purple-900 text-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-1">
@@ -327,7 +306,6 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* ── tabs ── */}
         <div className="flex border-b border-gray-200 mb-8 bg-white rounded-t-xl shadow-sm overflow-hidden">
           {abas.map(a => (
             <button
@@ -344,12 +322,8 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
           ))}
         </div>
 
-        {/* ══════════════════════════════════════════
-            OVERVIEW
-        ══════════════════════════════════════════ */}
         {aba === 'overview' && (
           <div>
-            {/* cards de stats */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
               {[
                 { label: 'Prestadores',        val: stats?.total_prestadores,    icon: <Users className="w-5 h-5 text-purple-600" />,     bg: 'bg-purple-50',  sub: `${stats?.prestadores_habilitados ?? '—'} habilitados` },
@@ -368,7 +342,6 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
               ))}
             </div>
 
-            {/* pendentes recentes */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 className="font-semibold text-gray-900">Documentos aguardando análise</h2>
@@ -400,12 +373,8 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════
-            PRESTADORES
-        ══════════════════════════════════════════ */}
         {aba === 'prestadores' && !prestadorSel && (
           <div>
-            {/* filtros */}
             <div className="flex flex-wrap gap-3 mb-5">
               <div className="relative flex-1 min-w-48">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -539,7 +508,6 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
           </div>
         )}
 
-        {/* ── drill-down: documentos de um prestador ── */}
         {aba === 'prestadores' && prestadorSel && (
           <div>
             <button
@@ -600,12 +568,8 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════
-            DOCUMENTOS
-        ══════════════════════════════════════════ */}
         {aba === 'documentos' && (
           <div>
-            {/* filtros */}
             <div className="flex flex-wrap gap-2 mb-5">
               {[
                 { val: '' as DocumentoStatus | '', label: 'Todos' },
@@ -674,7 +638,6 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        {/* ações rápidas para pendentes */}
                         {doc.status === 'pendente' && (
                           <>
                             <button
@@ -682,7 +645,7 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
                                 try {
                                   const updated = await adminService.aprovar(doc.id);
                                   handleDocAtualizado(updated);
-                                } catch { /* modal de erro não implementado aqui */ }
+                                } catch {  }
                               }}
                               className="flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 px-2.5 py-1.5 rounded-lg transition"
                               title="Aprovar"
@@ -708,7 +671,6 @@ export default function DashboardAdmin({ onOpenAuth }: DashboardAdminProps) {
 
       </div>
 
-      {/* modal de revisão */}
       <ReviewModal
         doc={docReview}
         isOpen={reviewOpen}

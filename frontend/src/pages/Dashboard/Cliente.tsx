@@ -76,7 +76,6 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
     }
   };
 
-  // favoritos
   const [favoritos, setFavoritos] = useState<Van[]>([]);
   const [favoritosLoading, setFavoritosLoading] = useState(false);
   const [favoritosError, setFavoritosError] = useState<string | null>(null);
@@ -315,7 +314,6 @@ const DashboardCliente = ({ onOpenAuth }: DashboardClienteProps) => {
               </div>
             )}
 
-            {/* ── HISTÓRICO ─────────────────────────────── */}
             {activeTab === 'historico' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">

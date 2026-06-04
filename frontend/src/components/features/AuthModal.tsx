@@ -48,18 +48,12 @@ const AuthModal = ({
 
   const isLogin = mode === "login";
 
-  /* =====================
-     SINCRONIZA O MODO
-  ===================== */
   useEffect(() => {
     if (isOpen && initialMode) {
       setMode(initialMode);
     }
   }, [isOpen, initialMode]);
 
-  /* =====================
-     RESET AO ABRIR
-  ===================== */
   useEffect(() => {
     if (isOpen) {
       setErrors({});

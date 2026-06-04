@@ -22,27 +22,22 @@ interface BuscaPageProps {
   onOpenAuth: (mode: AuthMode) => void;
 }
 
-// ─── funções de filtragem/ordenação (client-side) ────────────────────────────
 
 function aplicarFiltros(vans: Van[], f: FiltrosAtivos): Van[] {
   let resultado = [...vans];
 
-  // avaliação mínima
   if (f.avaliacaoMinima > 0) {
     resultado = resultado.filter((v) => v.avaliacao >= f.avaliacaoMinima);
   }
 
-  // vagas mínimas
   if (f.vagasMinimas > 0) {
     resultado = resultado.filter((v) => v.vagas >= f.vagasMinimas);
   }
 
-  // apenas com vagas
   if (f.apenasComVagas) {
     resultado = resultado.filter((v) => v.vagas > 0);
   }
 
-  // confortos do veículo (só filtra se o veículo tiver os dados; ignora se não tiver)
   const confortosAtivos: (keyof FiltrosAtivos)[] = [
     "ar_condicionado",
     "wifi",
@@ -55,7 +50,6 @@ function aplicarFiltros(vans: Van[], f: FiltrosAtivos): Van[] {
   for (const conforto of confortosAtivos) {
     if (f[conforto]) {
       resultado = resultado.filter((v) => {
-        // se a van não tem dados de veículo, não filtra (evita excluir indevidamente)
         if (!v.van) return true;
         return (v.van as any)[conforto] === true;
       });
@@ -77,11 +71,9 @@ function aplicarOrdenacao(vans: Van[], ordenacao: OrdenacaoOpcao): Van[] {
     case "nome_asc":
       return copia.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
     default:
-      return copia; // relevancia = ordem da API
+      return copia;
   }
 }
-
-// ─── componente ───────────────────────────────────────────────────────────────
 
 const Busca = ({ onOpenAuth }: BuscaPageProps) => {
   const location  = useLocation();
@@ -89,19 +81,15 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
 
   const searchFilters = location.state?.filters as SearchFilters | undefined;
 
-  // resultado bruto da API
   const [vansRaw, setVansRaw]         = useState<Van[]>([]);
   const [loading, setLoading]         = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // modais
   const [selectedVan, setSelectedVan]         = useState<Van | null>(null);
 
-  // favoritos (local — sem backend ainda)
   const [favorites, setFavorites] = useState<number[]>([]);
 
-  // filtros
   const [filtrosOpen, setFiltrosOpen] = useState(false);
   const [filtros, setFiltros]         = useState<FiltrosAtivos>({
     ...FILTROS_PADRAO,
@@ -110,7 +98,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
     periodo:     searchFilters?.periodo     ?? "",
   });
 
-  // aplica filtros + ordenação sobre o resultado da API (client-side, instantâneo)
   const vansExibidas = useMemo(() => {
     const filtradas  = aplicarFiltros(vansRaw, filtros);
     const ordenadas  = aplicarOrdenacao(filtradas, filtros.ordenacao);
@@ -118,8 +105,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
   }, [vansRaw, filtros]);
 
   const qtdFiltrosExtras = contarFiltrosAtivos(filtros);
-
-  // ── busca na API ──────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!searchFilters) {
@@ -145,9 +130,7 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
     }
   };
 
-  // nova busca vinda do SearchSection (no topo da página de resultados)
   const handleSearch = (sf: SearchFilters) => {
-    // atualiza também os campos correspondentes nos filtros para consistência
     setFiltros((prev) => ({
       ...prev,
       origem:      sf.origem      ?? "",
@@ -167,8 +150,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
     setFiltros(novosFiltros);
   };
 
-  // ── render ────────────────────────────────────────────────────────────────
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onOpenAuth={onOpenAuth} />
@@ -181,7 +162,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        {/* ── loading ── */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-gray-500">
             <Loader2 className="w-10 h-10 animate-spin text-purple-600" />
@@ -189,7 +169,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
           </div>
         )}
 
-        {/* ── erro ── */}
         {!loading && searchError && (
           <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl max-w-xl mx-auto mt-8">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -203,10 +182,8 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
           </div>
         )}
 
-        {/* ── resultados ── */}
         {!loading && !searchError && hasSearched && (
           <>
-            {/* cabeçalho de resultados + botão de filtros */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">
@@ -237,7 +214,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
               </button>
             </div>
 
-            {/* chips dos filtros ativos */}
             {qtdFiltrosExtras > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {filtros.avaliacaoMinima > 0 && (
@@ -294,7 +270,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
               </div>
             )}
 
-            {/* grid de resultados */}
             {vansExibidas.length > 0 ? (
               <>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -310,7 +285,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
                 </div>
               </>
             ) : (
-              /* nenhum resultado após filtros */
               <div className="text-center py-16">
                 <div className="bg-gray-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="w-12 h-12 text-gray-400" />
@@ -351,19 +325,16 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
         )}
       </div>
 
-      {/* ── painel de filtros ── */}
       <FiltrosPanel
         isOpen={filtrosOpen}
         onClose={() => setFiltrosOpen(false)}
         filtros={filtros}
         onChange={handleFiltrosChange}
         totalResultados={
-          // calcula quantos resultados a configuração local do painel retornaria
           aplicarFiltros(vansRaw, filtros).length
         }
       />
 
-      {/* ── modais ── */}
       <VanDetailsModal
         van={selectedVan}
         isOpen={!!selectedVan}
@@ -378,8 +349,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
     </div>
   );
 };
-
-// ─── chip de filtro ativo ─────────────────────────────────────────────────────
 
 function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
@@ -396,7 +365,6 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   );
 }
 
-// importação local do X para o Chip (evita import circular)
 import { X } from "lucide-react";
 
 export default Busca;

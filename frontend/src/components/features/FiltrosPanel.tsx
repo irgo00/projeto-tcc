@@ -5,21 +5,16 @@ import {
 } from "lucide-react";
 import Button from "../common/Button";
 
-// ─── tipos ────────────────────────────────────────────────────────────────────
-
 export interface FiltrosAtivos {
-  // vindos da busca principal (SearchSection) — repassados aqui só para exibição
   origem: string;
   instituicao: string;
   periodo: string;
 
-  // filtros locais (aplicados no frontend sobre o resultado já retornado pela API)
-  avaliacaoMinima: number;       // 0 = qualquer
-  vagasMinimas: number;          // 0 = qualquer
-  apenasComVagas: boolean;       // oculta rotas com 0 vagas
+  avaliacaoMinima: number;       
+  vagasMinimas: number;         
+  apenasComVagas: boolean;       
   ordenacao: OrdenacaoOpcao;
 
-  // confortos do veículo
   ar_condicionado: boolean;
   wifi: boolean;
   camera_interna: boolean;
@@ -51,12 +46,11 @@ export const FILTROS_PADRAO: FiltrosAtivos = {
   porta_automatica: false,
 };
 
-/** Conta quantos filtros "extras" (além dos da busca principal) estão ativos */
 export function contarFiltrosAtivos(f: FiltrosAtivos): number {
   let n = 0;
   if (f.avaliacaoMinima > 0)  n++;
   if (f.vagasMinimas > 0)     n++;
-  if (!f.apenasComVagas)      n++;  // invertido: padrão é true
+  if (!f.apenasComVagas)      n++; 
   if (f.ordenacao !== "relevancia") n++;
   if (f.ar_condicionado)  n++;
   if (f.wifi)             n++;
@@ -67,7 +61,6 @@ export function contarFiltrosAtivos(f: FiltrosAtivos): number {
   return n;
 }
 
-// ─── props ────────────────────────────────────────────────────────────────────
 
 interface FiltrosPanelProps {
   isOpen: boolean;
@@ -77,7 +70,6 @@ interface FiltrosPanelProps {
   totalResultados: number;
 }
 
-// ─── sub-componentes internos ─────────────────────────────────────────────────
 
 function StarRating({
   value,
@@ -179,7 +171,6 @@ const ORDENACOES: { value: OrdenacaoOpcao; label: string }[] = [
   { value: "nome_asc",      label: "Nome A–Z" },
 ];
 
-// ─── componente principal ─────────────────────────────────────────────────────
 
 export default function FiltrosPanel({
   isOpen,
@@ -188,15 +179,12 @@ export default function FiltrosPanel({
   onChange,
   totalResultados,
 }: FiltrosPanelProps) {
-  // cópia local para editar sem aplicar imediatamente
   const [local, setLocal] = useState<FiltrosAtivos>(filtros);
 
-  // sincroniza quando o painel abre
   useEffect(() => {
     if (isOpen) setLocal(filtros);
   }, [isOpen]);
 
-  // bloqueia scroll do body quando aberto
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -213,7 +201,6 @@ export default function FiltrosPanel({
   const handleLimpar = () => {
     const limpo: FiltrosAtivos = {
       ...FILTROS_PADRAO,
-      // mantém os filtros da busca principal
       origem: filtros.origem,
       instituicao: filtros.instituicao,
       periodo: filtros.periodo,
@@ -234,10 +221,8 @@ export default function FiltrosPanel({
         onClick={onClose}
       />
 
-      {/* drawer */}
       <div className="fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col">
 
-        {/* header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-5 h-5 text-purple-600" />
@@ -256,10 +241,8 @@ export default function FiltrosPanel({
           </button>
         </div>
 
-        {/* corpo — scrollável */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
 
-          {/* ── Ordenação ── */}
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
               Ordenar por
@@ -299,7 +282,6 @@ export default function FiltrosPanel({
 
           <div className="border-t border-gray-100" />
 
-          {/* ── Vagas ── */}
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
               Disponibilidade
@@ -341,7 +323,6 @@ export default function FiltrosPanel({
 
           <div className="border-t border-gray-100" />
 
-          {/* ── Avaliação ── */}
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
               Avaliação mínima
@@ -359,7 +340,6 @@ export default function FiltrosPanel({
 
           <div className="border-t border-gray-100" />
 
-          {/* ── Confortos do veículo ── */}
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
               Confortos e diferenciais
@@ -387,7 +367,6 @@ export default function FiltrosPanel({
 
         </div>
 
-        {/* footer fixo */}
         <div className="border-t border-gray-100 px-5 py-4 bg-white">
           <div className="flex gap-3">
             <button

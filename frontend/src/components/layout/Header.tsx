@@ -73,9 +73,7 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
             )}
           </div>
 
-          {/* Nav desktop */}
           <nav className="hidden md:flex items-center space-x-8">
-            {/* Admin não precisa de links de conteúdo público */}
             {!isAdmin && (
               <>
                 <button onClick={goHome} className="text-gray-700 hover:text-purple-600">
@@ -91,7 +89,6 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
             )}
           </nav>
 
-          {/* Ações desktop */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
@@ -102,7 +99,6 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
                   {getDashboardLabel()}
                 </button>
 
-                {/* Perfil só para não-admin */}
                 {!isAdmin && (
                   <button
                     onClick={() => navigate("/perfil")}
@@ -137,13 +133,11 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
             )}
           </div>
 
-          {/* Hamburguer mobile */}
           <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X /> : <Menu />}
           </button>
         </div>
 
-        {/* Menu mobile */}
         {menuOpen && (
           <div className="md:hidden py-4 space-y-3 border-t">
             {!isAdmin && (
