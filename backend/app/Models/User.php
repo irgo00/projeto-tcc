@@ -36,10 +36,6 @@ class User extends Authenticatable implements JWTSubject
         'telefone_verificado'=> 'boolean',
     ];
 
-    /* ======================
-     | JWT IMPLEMENTATION
-     |======================*/
-
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -49,10 +45,6 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-
-    /* ======================
-     | RELACIONAMENTOS
-     |======================*/
 
     public function vans()
     {
@@ -143,9 +135,6 @@ class User extends Authenticatable implements JWTSubject
         }
     }
 
-    /**
-     * Verifica se o prestador pode criar rotas.
-     */
     public function podecriarRotas(): bool
     {
         return $this->isPrestador() && $this->status_habilitacao === 'habilitado';

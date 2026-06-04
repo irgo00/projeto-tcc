@@ -45,7 +45,6 @@ class VanVeiculoController extends Controller
 
     public function minhas()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if ($user->tipo !== 'prestador') {
@@ -62,7 +61,6 @@ class VanVeiculoController extends Controller
 
     public function show($id)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $van = Van::with('fotos')->find($id);
@@ -80,7 +78,6 @@ class VanVeiculoController extends Controller
 
     public function store(Request $request)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if ($user->tipo !== 'prestador') {
@@ -133,7 +130,6 @@ class VanVeiculoController extends Controller
 
     public function update(Request $request, $id)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $van = Van::find($id);
@@ -184,7 +180,6 @@ class VanVeiculoController extends Controller
 
     public function destroy($id)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $van = Van::find($id);
@@ -205,7 +200,6 @@ class VanVeiculoController extends Controller
             ], 422);
         }
 
-        // Remove arquivos físicos das fotos
         foreach ($van->fotos as $foto) {
             Storage::disk('public')->delete($foto->caminho);
         }
@@ -217,7 +211,6 @@ class VanVeiculoController extends Controller
 
     public function uploadFotos(Request $request, $id)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $van = Van::with('fotos')->find($id);
@@ -282,7 +275,6 @@ class VanVeiculoController extends Controller
 
     public function deleteFoto($vanId, $fotoId)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $van  = Van::find($vanId);
@@ -300,7 +292,6 @@ class VanVeiculoController extends Controller
         $eraPrincipal = $foto->principal;
         $foto->delete();
 
-        // Promove a próxima foto como principal se a removida era principal
         if ($eraPrincipal) {
             $proxima = VanFoto::where('van_id', $vanId)->orderBy('ordem')->first();
             if ($proxima) {
@@ -313,7 +304,6 @@ class VanVeiculoController extends Controller
 
     public function setPrincipal($vanId, $fotoId)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $van  = Van::find($vanId);

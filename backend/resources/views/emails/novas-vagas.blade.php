@@ -3,7 +3,6 @@
 @section('titulo', 'Vagas disponíveis')
 
 @section('conteudo')
-    {{-- Faixa de destaque com a quantidade de vagas --}}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="margin:0 0 24px; background:linear-gradient(135deg,#7c3aed 0%,#9333ea 100%); border-radius:12px;">
         <tr>
@@ -31,7 +30,6 @@
         prestador antes que as vagas sejam preenchidas.
     </p>
 
-    {{-- Card com detalhes da rota --}}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="margin:0 0 24px; background-color:#f9fafb; border:1px solid #e5e7eb; border-radius:12px;">
         <tr>
@@ -70,18 +68,11 @@
                             </td>
                         </tr>
                     @endif
-                    @if ($valorFormatado)
-                        <tr>
-                            <td style="padding:4px 0; color:#6b7280;">Mensalidade</td>
-                            <td style="padding:4px 0;"><strong>{{ $valorFormatado }}</strong></td>
-                        </tr>
-                    @endif
                 </table>
             </td>
         </tr>
     </table>
 
-    {{-- Contato direto com o prestador --}}
     @if ($telefone || $emailContato)
         <p style="margin:0 0 10px; font-size:13px; color:#6b7280; letter-spacing:0.3px; text-transform:uppercase;">
             Fale com o prestador
@@ -105,7 +96,6 @@
         </table>
     @endif
 
-    {{-- CTA --}}
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
         <tr>
             <td style="border-radius:10px; background-color:#7c3aed;">

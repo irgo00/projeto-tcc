@@ -1,14 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-//  Dashboard/Prestador.tsx  (versão atualizada com aba de Habilitação)
-//
-//  MUDANÇAS em relação à versão anterior:
-//   1. Nova aba "Habilitação" com <HabilitacaoSection />
-//   2. Bloqueio de criar rotas enquanto conta não estiver habilitada
-//   3. Banner de alerta persistente quando status_habilitacao !== 'habilitado'
-//
-//  O restante do dashboard (Rotas, Minhas Vans, Avaliações) permanece igual.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { useState, useEffect } from 'react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -63,12 +52,10 @@ const CONFORTO_LABELS: Record<string, string> = {
 function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const { user, updateUser } = useAuth();
 
-  // Verifica se a conta está habilitada (campo vindo do backend via /me)
   const habilitado = (user as any)?.status_habilitacao === 'habilitado';
 
   const [activeTab, setActiveTab] = useState('rotas');
 
-  // ── feedback do retorno da confirmação de e-mail (?email_verified=...) ──
   const [emailFeedback, setEmailFeedback] = useState<{ tipo: 'ok' | 'erro' | 'info'; texto: string } | null>(null);
 
   useEffect(() => {
@@ -86,18 +73,15 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
     setEmailFeedback(mensagens[status] ?? null);
     setActiveTab('habilitacao');
 
-    // Atualiza o usuário (email_verificado / status_habilitacao) a partir do /me
     if (status === '1' || status === 'already') {
       authService.getCurrentUser().then((u) => { if (u) updateUser(u); });
     }
 
-    // Remove o parâmetro da URL sem recarregar
     params.delete('email_verified');
     const novaQuery = params.toString();
     window.history.replaceState({}, '', window.location.pathname + (novaQuery ? `?${novaQuery}` : ''));
   }, [updateUser]);
 
-  // ── rotas ──
   const [vans, setVans] = useState<Van[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -112,8 +96,8 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [togglingVanId, setTogglingVanId] = useState<number | null>(null);
   const [ajustandoVagasId, setAjustandoVagasId] = useState<number | null>(null);
+  const [confirmacaoVagas, setConfirmacaoVagas] = useState<{ van: Van; delta: 1 | -1 } | null>(null);
 
-  // ── veículos ──
   const [veiculos, setVeiculos] = useState<VanVeiculo[]>([]);
   const [veiculosLoading, setVeiculosLoading] = useState(false);
   const [veiculosError, setVeiculosError] = useState<string | null>(null);
@@ -124,7 +108,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const [deleteVeiculoError, setDeleteVeiculoError] = useState<string | null>(null);
   const [fotoVeiculoId, setFotoVeiculoId] = useState<number | null>(null);
 
-  // ── avaliações ──
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoRecebida[]>([]);
   const [avaliacoesLoading, setAvaliacoesLoading] = useState(false);
   const [avaliacoesError, setAvaliacoesError] = useState<string | null>(null);
@@ -172,7 +155,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   };
 
   const abrirModalCriar = () => {
-    if (!habilitado) return; // guarda de segurança
+    if (!habilitado) return;
     setEditingVan(null);
     setFormData({ ...FORM_VAZIO, telefone: user?.telefone ?? '', email: user?.email ?? '' });
     setFormErrors({}); setFormError(null); setShowModal(true);
@@ -240,14 +223,23 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
     } finally { setTogglingVanId(null); }
   };
 
-  const handleAjustarVagas = async (van: Van, delta: 1 | -1) => {
+  const executarAjusteVagas = async (van: Van, delta: 1 | -1) => {
     const novoValor = (van.vagas_disponiveis ?? 0) + delta;
-    if (novoValor < 0 || novoValor > (van.vagas_totais ?? 0)) return;
     setAjustandoVagasId(van.id);
     try {
       await vanService.atualizar(van.id, { vagas_disponiveis: novoValor });
       setVans(prev => prev.map(v => v.id === van.id ? { ...v, vagas_disponiveis: novoValor } : v));
     } finally { setAjustandoVagasId(null); }
+  };
+
+  const handleAjustarVagas = (van: Van, delta: 1 | -1) => {
+    const novoValor = (van.vagas_disponiveis ?? 0) + delta;
+    if (novoValor < 0 || novoValor > (van.vagas_totais ?? 0)) return;
+    if ((van.vagas_disponiveis ?? 0) === 0 && delta === 1) {
+      setConfirmacaoVagas({ van, delta });
+      return;
+    }
+    executarAjusteVagas(van, delta);
   };
 
   const handleDeletar = async (id: number) => {
@@ -297,7 +289,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        {/* ── feedback da confirmação de e-mail ── */}
         {emailFeedback && (
           <div className={`flex items-start gap-3 rounded-xl px-5 py-4 mb-8 border ${
             emailFeedback.tipo === 'ok'
@@ -314,7 +305,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
           </div>
         )}
 
-        {/* ── banner de conta não habilitada ── */}
         {!habilitado && (
           <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-8">
             <ShieldAlert className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -333,8 +323,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
             </div>
           </div>
         )}
-
-        {/* Cards de estatísticas */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           {[
             { icon: <Calendar className="w-6 h-6 text-purple-600" />, bg: 'bg-purple-100', valor: loading ? '—' : estatisticas.totalRotas, label: 'Rotas Ativas' },
@@ -353,7 +341,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
         </div>
 
         <div className="bg-white rounded-xl shadow-md">
-          {/* abas */}
           <div className="border-b">
             <div className="flex overflow-x-auto">
               {[
@@ -382,7 +369,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
           <div className="p-6">
 
-            {/* ══ ROTAS ══ */}
             {activeTab === 'rotas' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
@@ -504,7 +490,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
               </div>
             )}
 
-            {/* ══ VEÍCULOS ══ */}
             {activeTab === 'veiculos' && (
               <div>
                 <div className="flex justify-between items-center mb-6">
@@ -600,7 +585,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
               </div>
             )}
 
-            {/* ══ AVALIAÇÕES ══ */}
             {activeTab === 'avaliacoes' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Avaliações Recebidas{!avaliacoesLoading && ` (${avaliacoes.length})`}</h2>
@@ -626,14 +610,12 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
               </div>
             )}
 
-            {/* ══ HABILITAÇÃO ══ */}
             {activeTab === 'habilitacao' && <HabilitacaoSection />}
 
           </div>
         </div>
       </div>
 
-      {/* modal rota */}
       <Modal isOpen={showModal} onClose={() => !formLoading && setShowModal(false)} title={editingVan ? `Editar: ${editingVan.nome}` : 'Nova Rota'} size="md">
         <div className="space-y-4">
           <Input label="Nome da Rota" value={formData.nome} error={formErrors.nome} placeholder="Ex: Van Escolar Central" required onChange={e => setField('nome', e.target.value)} />
@@ -711,6 +693,50 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
           setShowVeiculoForm(false);
         }}
       />
+
+      {confirmacaoVagas && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-start gap-4 mb-5">
+              <div className="bg-purple-100 p-3 rounded-xl flex-shrink-0">
+                <Users className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-lg leading-tight">Notificar clientes?</h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  Esta rota estava sem vagas. Ao confirmar, todos os clientes que a favoritaram
+                  receberão um e-mail informando que as vagas foram reabertas.
+                </p>
+                <p className="text-purple-700 text-sm font-medium mt-3 bg-purple-50 px-3 py-2 rounded-lg">
+                  Rota: {confirmacaoVagas.van.nome}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="primary"
+                loading={ajustandoVagasId === confirmacaoVagas.van.id}
+                onClick={async () => {
+                  const { van, delta } = confirmacaoVagas;
+                  setConfirmacaoVagas(null);
+                  await executarAjusteVagas(van, delta);
+                }}
+                className="flex-1"
+              >
+                Confirmar e notificar
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setConfirmacaoVagas(null)}
+                disabled={ajustandoVagasId === confirmacaoVagas.van.id}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

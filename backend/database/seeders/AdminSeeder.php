@@ -6,19 +6,10 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * AdminSeeder — cria o usuário administrador da plataforma.
- *
- * COMO USAR:
- *   php artisan db:seed --class=AdminSeeder
- *
- * Lembre de alterar e-mail e senha antes de rodar em produção.
- */
 class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        // Evita duplicata ao re-rodar o seeder
         if (User::where('email', env('ADMIN_EMAIL', 'admin@pbte.com.br'))->exists()) {
             $this->command->info('Usuário admin já existe. Seeder ignorado.');
             return;
@@ -27,7 +18,7 @@ class AdminSeeder extends Seeder
         User::create([
             'nome'                => 'Administrador PBTE',
             'email'               => env('ADMIN_EMAIL', 'admin@pbte.com.br'),
-            'cpf'                 => '000.000.000-00',   // CPF fictício — admin não precisa de CPF real
+            'cpf'                 => '000.000.000-00',
             'data_nascimento'     => '1990-01-01',
             'telefone'            => '(00) 00000-0000',
             'password'            => Hash::make(env('ADMIN_PASSWORD', 'Admin@2025!')),

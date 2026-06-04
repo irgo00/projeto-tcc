@@ -11,17 +11,8 @@ use Illuminate\Support\Str;
 
 class DocumentoController extends Controller
 {
-    /* ==========================================================
-     | PRESTADOR — envio e consulta dos próprios documentos
-     |==========================================================*/
-
-    /**
-     * Lista os documentos do prestador autenticado.
-     * GET /documentos/meus
-     */
     public function meus()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if (!$user->isPrestador()) {
@@ -42,17 +33,8 @@ class DocumentoController extends Controller
         ]);
     }
 
-    /**
-     * Envia um novo documento (ou reenvio após correção).
-     * POST /documentos
-     *
-     * Body (multipart/form-data):
-     *   tipo    string  – cnh | crlv | antecedentes | laudo_tecnico | outros
-     *   arquivo file    – PDF, JPG, PNG, WEBP (max 10 MB)
-     */
     public function store(Request $request)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if (!$user->isPrestador()) {
@@ -108,13 +90,8 @@ class DocumentoController extends Controller
         ], 201);
     }
 
-    /**
-     * Reenvio de documento com correção solicitada.
-     * POST /documentos/{id}/reenviar
-     */
     public function reenviar(Request $request, int $id)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $documento = DocumentoPrestador::where('prestador_id', $user->id)->find($id);
@@ -163,14 +140,6 @@ class DocumentoController extends Controller
         ]);
     }
 
-    /* ==========================================================
-     | ADMIN — listagem e revisão de documentos
-     |==========================================================*/
-
-    /**
-     * Lista todos os documentos de um prestador específico.
-     * GET /admin/documentos/prestador/{prestadorId}
-     */
     public function porPrestador(int $prestadorId)
     {
         $this->autorizarAdmin();
@@ -181,7 +150,7 @@ class DocumentoController extends Controller
         }
 
         $documentos = DocumentoPrestador::where('prestador_id', $prestadorId)
-            ->withTrashed()  // inclui deletados para histórico
+            ->withTrashed()
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn($doc) => $this->formatDocumento($doc, true));
@@ -198,12 +167,6 @@ class DocumentoController extends Controller
         ]);
     }
 
-    /**
-     * Lista todos os documentos da plataforma com filtros.
-     * GET /admin/documentos
-     *
-     * Query params: status, tipo, prestador_id, page
-     */
     public function indexAdmin(Request $request)
     {
         $this->autorizarAdmin();
@@ -228,10 +191,6 @@ class DocumentoController extends Controller
         return response()->json(['success' => true, 'documentos' => $documentos]);
     }
 
-    /**
-     * Aprova um documento.
-     * PUT /admin/documentos/{id}/aprovar
-     */
     public function aprovar(int $id)
     {
         $this->autorizarAdmin();
@@ -249,7 +208,6 @@ class DocumentoController extends Controller
             'revisado_em'      => now(),
         ]);
 
-        // Recalcula habilitação (regra centralizada no model: docs + e-mail verificado)
         $documento->prestador->recalcularHabilitacao();
 
         return response()->json([
@@ -259,12 +217,6 @@ class DocumentoController extends Controller
         ]);
     }
 
-    /**
-     * Reprova um documento com justificativa.
-     * PUT /admin/documentos/{id}/reprovar
-     *
-     * Body: { observacao: string (required) }
-     */
     public function reprovar(Request $request, int $id)
     {
         $this->autorizarAdmin();
@@ -301,12 +253,6 @@ class DocumentoController extends Controller
         ]);
     }
 
-    /**
-     * Solicita correção de um documento.
-     * PUT /admin/documentos/{id}/correcao
-     *
-     * Body: { observacao: string (required) }
-     */
     public function solicitarCorrecao(Request $request, int $id)
     {
         $this->autorizarAdmin();
@@ -341,14 +287,6 @@ class DocumentoController extends Controller
         ]);
     }
 
-    /* ==========================================================
-     | ADMIN — visão geral de prestadores
-     |==========================================================*/
-
-    /**
-     * Lista todos os prestadores com resumo de documentos.
-     * GET /admin/prestadores
-     */
     public function prestadoresAdmin(Request $request)
     {
         $this->autorizarAdmin();
@@ -386,10 +324,6 @@ class DocumentoController extends Controller
         return response()->json(['success' => true, 'prestadores' => $prestadores]);
     }
 
-    /**
-     * Estatísticas gerais do admin.
-     * GET /admin/stats
-     */
     public function stats()
     {
         $this->autorizarAdmin();
@@ -408,13 +342,8 @@ class DocumentoController extends Controller
         ]);
     }
 
-    /* ==========================================================
-     | PRIVADOS
-     |==========================================================*/
-
     private function autorizarAdmin(): void
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
         if (!$user || !$user->isAdmin()) {
             abort(403, 'Acesso exclusivo para administradores.');

@@ -5,9 +5,6 @@ namespace App\Mail;
 use App\Models\User;
 use Illuminate\Mail\Mailable;
 
-/**
- * E-mail de confirmação de endereço.
- * */
 class VerificarEmail extends Mailable
 {
     public User $usuario;

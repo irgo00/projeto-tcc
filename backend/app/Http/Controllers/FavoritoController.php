@@ -9,7 +9,6 @@ class FavoritoController extends Controller
 {
     public function index()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $favoritos = $user
@@ -39,7 +38,6 @@ class FavoritoController extends Controller
             'van_id' => 'required|exists:rotas,id',
         ]);
 
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if ($user->favoritos()->where('rotas.id', $request->van_id)->exists()) {
@@ -53,7 +51,6 @@ class FavoritoController extends Controller
 
     public function destroy($vanId)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if (!$user->favoritos()->where('rotas.id', $vanId)->exists()) {
@@ -67,7 +64,6 @@ class FavoritoController extends Controller
 
     public function check($vanId)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $isFavorito = $user->favoritos()->where('rotas.id', $vanId)->exists();

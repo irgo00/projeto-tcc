@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, Users, Star, Phone, Mail, Loader2, ChevronDown, ChevronUp, X, Heart, Wifi, Wind, Camera, Zap, Accessibility, DoorOpen } from 'lucide-react';
+import { MapPin, Clock, Users, Star, Phone, Mail, Loader2, ChevronDown, ChevronUp, X, Heart, Wifi, Wind, Camera, Zap, Accessibility, DoorOpen, Lock } from 'lucide-react';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import VanFotoCarousel from './VanFotoCarousel';
@@ -232,23 +232,25 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-2">Contato</h3>
-            <div className="space-y-1.5 ml-1">
-              {van.telefone && (
-                <div className="flex items-center text-gray-700 text-sm">
-                  <Phone className="w-4 h-4 mr-2 text-purple-600" />
-                  {van.telefone}
-                </div>
-              )}
-              {van.email && (
-                <div className="flex items-center text-gray-700 text-sm">
-                  <Mail className="w-4 h-4 mr-2 text-purple-600" />
-                  {van.email}
-                </div>
-              )}
+          {user && (van.telefone || van.email) && (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="font-semibold text-gray-900 mb-2">Contato</h3>
+              <div className="space-y-1.5 ml-1">
+                {van.telefone && (
+                  <div className="flex items-center text-gray-700 text-sm">
+                    <Phone className="w-4 h-4 mr-2 text-purple-600" />
+                    {van.telefone}
+                  </div>
+                )}
+                {van.email && (
+                  <div className="flex items-center text-gray-700 text-sm">
+                    <Mail className="w-4 h-4 mr-2 text-purple-600" />
+                    {van.email}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
@@ -367,10 +369,17 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
         </div>
 
         <div className="space-y-3">
-          <Button variant="primary" size="lg" loading={contatoLoading} onClick={handleEntrarEmContato} className="w-full flex items-center justify-center gap-2">
-            <Phone className="w-5 h-5" />
-            Entrar em Contato
-          </Button>
+          {user ? (
+            <Button variant="primary" size="lg" loading={contatoLoading} onClick={handleEntrarEmContato} className="w-full flex items-center justify-center gap-2">
+              <Phone className="w-5 h-5" />
+              Entrar em Contato
+            </Button>
+          ) : (
+            <Button variant="primary" size="lg" disabled className="w-full flex items-center justify-center gap-2 opacity-60 cursor-not-allowed">
+              <Lock className="w-5 h-5" />
+              Entrar em Contato
+            </Button>
+          )}
 
           {isCliente && (
             <Button
@@ -386,7 +395,7 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
 
           {!user && (
             <p className="text-center text-sm text-gray-500">
-              <button className="text-purple-600 hover:underline font-medium">Faça login</button> para salvar nos favoritos.
+              <button className="text-purple-600 hover:underline font-medium">Faça login</button> para entrar em contato e salvar nos favoritos.
             </p>
           )}
         </div>

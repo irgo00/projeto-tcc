@@ -12,7 +12,6 @@ class JWTMiddleware
     public function handle($request, Closure $next)
     {
         try {
-            // Get token from request header
             $token = JWTAuth::getToken();
 
             if (!$token) {
@@ -22,7 +21,6 @@ class JWTMiddleware
                 ], 401);
             }
 
-            // Authenticate the token
             $user = JWTAuth::authenticate($token);
 
             if (!$user) {
@@ -32,7 +30,6 @@ class JWTMiddleware
                 ], 401);
             }
 
-            // Register user with the API guard so auth()->user() works
             Auth::guard('api')->setUser($user);
 
         } catch (JWTException $e) {

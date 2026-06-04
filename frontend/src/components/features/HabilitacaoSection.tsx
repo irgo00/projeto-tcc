@@ -9,8 +9,6 @@ import { documentoService } from '../../services/documentoService';
 import { authService } from '../../services/authService';
 import type { Documento, ProgressoHabilitacao, DocumentoTipo } from '../../types/Documento';
 
-// ─── constantes ───────────────────────────────────────────────────────────────
-
 const TIPOS_OBRIGATORIOS: { tipo: DocumentoTipo; label: string; icon: React.ReactNode; desc: string }[] = [
   {
     tipo: 'cnh',
@@ -45,8 +43,6 @@ const STATUS_CONFIG: Record<string, { label: string; classes: string; dot: strin
   correcao:  { label: 'Correção solicitada', classes: 'bg-blue-50  text-blue-700  border-blue-200', dot: 'bg-blue-500'  },
 };
 
-// ─── sub-componente: badge de status ─────────────────────────────────────────
-
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pendente;
   return (
@@ -56,8 +52,6 @@ function StatusBadge({ status }: { status: string }) {
     </span>
   );
 }
-
-// ─── sub-componente: upload modal ─────────────────────────────────────────────
 
 interface UploadModalProps {
   tipo: DocumentoTipo;
@@ -192,15 +186,12 @@ function UploadModal({ tipo, label, reenvioId, motivoCorrecao, onClose, onSucess
   );
 }
 
-// ─── componente principal ─────────────────────────────────────────────────────
-
 export default function HabilitacaoSection() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [progresso, setProgresso] = useState<ProgressoHabilitacao | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
-  // modal de upload
   const [uploadModal, setUploadModal] = useState<{
     tipo: DocumentoTipo;
     label: string;
@@ -208,10 +199,8 @@ export default function HabilitacaoSection() {
     motivoCorrecao?: string | null;
   } | null>(null);
 
-  // expansão de observação
   const [expandedObs, setExpandedObs] = useState<number | null>(null);
 
-  // reenvio de verificação de e-mail
   const [reenviando, setReenviando] = useState(false);
   const [reenvioMsg, setReenvioMsg] = useState<{ tipo: 'ok' | 'erro'; texto: string } | null>(null);
 
@@ -250,11 +239,9 @@ export default function HabilitacaoSection() {
       return [doc, ...prev];
     });
     setUploadModal(null);
-    // Recarrega para atualizar o progresso
     carregar();
   };
 
-  // helpers
   const docPorTipo = (tipo: DocumentoTipo) => documentos.find(d => d.tipo === tipo);
 
   const podeEnviar = (tipo: DocumentoTipo): boolean => {
@@ -263,7 +250,6 @@ export default function HabilitacaoSection() {
     return doc.status === 'correcao' || doc.status === 'reprovado';
   };
 
-  // etapas do stepper
   const etapas = progresso
     ? [
         { key: 'email_verificado',    label: 'E-mail verificado',       desc: 'Link de confirmação enviado e validado.',  done: progresso.etapas.email_verificado,     waiting: false },
@@ -295,7 +281,6 @@ export default function HabilitacaoSection() {
   return (
     <div className="max-w-2xl space-y-6">
 
-      {/* ── alerta de status ── */}
       {progresso && !progresso.habilitado && (
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
           <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -320,7 +305,6 @@ export default function HabilitacaoSection() {
         </div>
       )}
 
-      {/* ── progresso ── */}
       {progresso && (
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -328,7 +312,6 @@ export default function HabilitacaoSection() {
             <span className="text-sm font-semibold text-purple-600">{progresso.percentual}%</span>
           </div>
           <div className="px-6 py-5">
-            {/* barra */}
             <div className="w-full h-2 bg-gray-100 rounded-full mb-6 overflow-hidden">
               <div
                 className="h-full bg-purple-600 rounded-full transition-all duration-500"
@@ -336,11 +319,9 @@ export default function HabilitacaoSection() {
               />
             </div>
 
-            {/* stepper */}
             <div className="space-y-4">
               {etapas.map((etapa, i) => (
                 <div key={i} className="flex items-start gap-4">
-                  {/* ícone */}
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
                     etapa.done
                       ? 'bg-green-100 text-green-600'
@@ -355,7 +336,6 @@ export default function HabilitacaoSection() {
                       : <Lock className="w-4 h-4" />}
                   </div>
 
-                  {/* texto */}
                   <div className="flex-1 min-w-0">
                     <p className={`text-sm font-medium ${etapa.done ? 'text-gray-900' : 'text-gray-500'}`}>
                       {etapa.label}
@@ -384,7 +364,6 @@ export default function HabilitacaoSection() {
                     )}
                   </div>
 
-                  {/* badge */}
                   {etapa.done ? (
                     <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
                       Concluído
@@ -405,7 +384,6 @@ export default function HabilitacaoSection() {
         </div>
       )}
 
-      {/* ── documentos obrigatórios ── */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
         <div className="px-6 py-4 border-b border-gray-100">
           <h3 className="font-semibold text-gray-900">Documentos obrigatórios</h3>
@@ -450,7 +428,6 @@ export default function HabilitacaoSection() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {doc && <StatusBadge status={doc.status} />}
 
-                    {/* ver arquivo */}
                     {doc && (
                       <a
                         href={doc.url}
@@ -463,7 +440,6 @@ export default function HabilitacaoSection() {
                       </a>
                     )}
 
-                    {/* enviar / reenviar */}
                     {podeSub && (
                       <button
                         onClick={() =>
@@ -488,7 +464,6 @@ export default function HabilitacaoSection() {
                   </div>
                 </div>
 
-                {/* observação do admin */}
                 {doc?.observacao_admin && (
                   <div className="mt-3 ml-12">
                     <button
@@ -511,7 +486,6 @@ export default function HabilitacaoSection() {
         </div>
       </div>
 
-      {/* ── modal de upload ── */}
       {uploadModal && (
         <UploadModal
           {...uploadModal}

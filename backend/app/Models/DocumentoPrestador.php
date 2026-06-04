@@ -30,10 +30,6 @@ class DocumentoPrestador extends Model
         'revisado_em' => 'datetime',
     ];
 
-    /* ========================
-     | RELACIONAMENTOS
-     |========================*/
-
     public function prestador()
     {
         return $this->belongsTo(User::class, 'prestador_id');
@@ -44,21 +40,11 @@ class DocumentoPrestador extends Model
         return $this->belongsTo(User::class, 'revisado_por');
     }
 
-    /* ========================
-     | ACESSORES
-     |========================*/
-
-    /**
-     * URL pública do arquivo armazenado.
-     */
     public function getUrlAttribute(): string
     {
         return Storage::disk('public')->url($this->caminho);
     }
 
-    /**
-     * Tamanho do arquivo formatado (KB / MB).
-     */
     public function getTamanhoFormatadoAttribute(): string
     {
         if (!$this->tamanho) return '—';
@@ -70,18 +56,10 @@ class DocumentoPrestador extends Model
         return round($this->tamanho / 1_024, 0) . ' KB';
     }
 
-    /* ========================
-     | HELPERS DE STATUS
-     |========================*/
-
     public function isPendente(): bool  { return $this->status === 'pendente'; }
     public function isAprovado(): bool  { return $this->status === 'aprovado'; }
     public function isReprovado(): bool { return $this->status === 'reprovado'; }
     public function isCorrecao(): bool  { return $this->status === 'correcao'; }
-
-    /* ========================
-     | LABELS LEGÍVEIS
-     |========================*/
 
     public static function tipoLabel(string $tipo): string
     {

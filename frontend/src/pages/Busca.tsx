@@ -7,7 +7,6 @@ import Footer from "../components/layout/Footer";
 import SearchSection from "../components/features/SearchSection";
 import VanCard from "../components/features/VanCard";
 import VanDetailsModal from "../components/features/VanDetailsModal";
-import RouteMapModal from "../components/features/RouteMapModal";
 import Button from "../components/common/Button";
 import FiltrosPanel, {
   FILTROS_PADRAO,
@@ -98,7 +97,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
 
   // modais
   const [selectedVan, setSelectedVan]         = useState<Van | null>(null);
-  const [selectedRouteVan, setSelectedRouteVan] = useState<Van | null>(null);
 
   // favoritos (local — sem backend ainda)
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -305,7 +303,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
                       key={van.id}
                       van={van}
                       onViewDetails={(v) => setSelectedVan(v)}
-                      onViewRoute={(v) => setSelectedRouteVan(v)}
                       onToggleFavorite={handleToggleFavorite}
                       isFavorite={favorites.includes(van.id)}
                     />
@@ -395,11 +392,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
             fav ? [...prev, id] : prev.filter((x) => x !== id)
           )
         }
-      />
-      <RouteMapModal
-        van={selectedRouteVan}
-        isOpen={!!selectedRouteVan}
-        onClose={() => setSelectedRouteVan(null)}
       />
       <Footer />
     </div>

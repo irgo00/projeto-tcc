@@ -15,7 +15,7 @@ class EmailVerificationController extends Controller
 
         $user = User::find($id);
 
-        // Link válido (assinado), mas usuário inexistente ou hash não confere com o e-mail atual
+        // Link válido, mas usuário inexistente ou hash não confere com o e-mail atual
         if (!$user || !hash_equals(sha1($user->email), (string) $hash)) {
             return redirect($destino . '?email_verified=invalid');
         }
@@ -27,7 +27,6 @@ class EmailVerificationController extends Controller
         $user->email_verificado = true;
         $user->save();
 
-        // Recalcula a habilitação (e-mail é pré-requisito) — ponto único de verdade
         $user->recalcularHabilitacao();
 
         return redirect($destino . '?email_verified=1');
@@ -35,7 +34,6 @@ class EmailVerificationController extends Controller
 
     public function resend()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if ($user->email_verificado) {

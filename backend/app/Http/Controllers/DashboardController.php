@@ -10,7 +10,6 @@ class DashboardController extends Controller
 {
     public function prestador()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if ($user->tipo !== 'prestador') {
@@ -59,7 +58,6 @@ class DashboardController extends Controller
 
     public function cliente()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if ($user->tipo !== 'cliente') {

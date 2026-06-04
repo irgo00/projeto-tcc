@@ -23,7 +23,7 @@ class AuthController extends Controller
             'data_nascimento' => 'required|date|before:' . now()->subYears(config('app.min_age', 13))->format('Y-m-d'),
             'telefone'        => 'required|string|max:20',
             'senha'           => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&_\-#]/'],
-            'tipo'            => 'required|in:cliente,prestador',   // admin só via seeder/tinker
+            'tipo'            => 'required|in:cliente,prestador',   // admin só via seeder
         ], [
             'data_nascimento.before' => 'É necessário ter pelo menos 13 anos para criar uma conta.',
             'cpf.size'    => 'CPF inválido.',
@@ -49,7 +49,6 @@ class AuthController extends Controller
             'telefone'        => $request->telefone,
             'password'        => Hash::make($request->senha),
             'tipo'            => $request->tipo,
-            // novos campos — default definido na migration
         ]);
 
         $emailEnviado = false;
@@ -95,7 +94,6 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Email ou senha incorretos.'], 401);
         }
 
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         return response()->json([
@@ -113,7 +111,6 @@ class AuthController extends Controller
 
     public function me()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         return response()->json([
@@ -193,12 +190,6 @@ class AuthController extends Controller
         return response()->json(['success' => true, 'message' => 'Senha alterada com sucesso!']);
     }
 
-    // ─── helpers ──────────────────────────────────────────────────────────────
-
-    /**
-     * Formata o objeto User para retorno na API.
-     * Inclui os novos campos de habilitação.
-     */
     private function formatUser(User $user): array
     {
         return [
@@ -208,7 +199,6 @@ class AuthController extends Controller
             'cpf'                  => $user->cpf,
             'telefone'             => $user->telefone,
             'tipo'                 => $user->tipo,
-            // novos campos
             'status_habilitacao'   => $user->status_habilitacao  ?? 'pendente',
             'email_verificado'     => (bool) ($user->email_verificado  ?? false),
             'telefone_verificado'  => (bool) ($user->telefone_verificado ?? false),

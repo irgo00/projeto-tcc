@@ -11,7 +11,6 @@ class AvaliacaoController extends Controller
 {
     public function store(Request $request)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         if ($user->tipo !== 'cliente') {
@@ -75,7 +74,6 @@ class AvaliacaoController extends Controller
 
     public function recebidas()
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
         $rotaIds = Rota::where('prestador_id', $user->id)->pluck('id');
