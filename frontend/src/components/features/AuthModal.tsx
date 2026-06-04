@@ -298,17 +298,6 @@ const AuthModal = ({
           {isLogin ? "Entrar" : "Cadastrar"}
         </Button>
 
-        {isLogin && (
-          <div className="text-center">
-            <a
-              href="#"
-              className="text-sm text-purple-600 hover:text-purple-700"
-            >
-              Esqueci minha senha
-            </a>
-          </div>
-        )}
-
         <div className="text-center pt-4 border-t">
           <p className="text-sm text-gray-600">
             {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}

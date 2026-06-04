@@ -308,25 +308,6 @@ const Busca = ({ onOpenAuth }: BuscaPageProps) => {
                     />
                   ))}
                 </div>
-
-                {/* bloco de favoritos */}
-                {favorites.length > 0 && (
-                  <div className="mt-12 bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <Heart className="w-6 h-6 text-red-500 fill-current" />
-                        Meus Favoritos ({favorites.length})
-                      </h3>
-                      <button className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1">
-                        <Bell className="w-4 h-4" />
-                        Ativar Notificações
-                      </button>
-                    </div>
-                    <p className="text-gray-600 text-sm">
-                      Você será notificado quando houver vagas disponíveis nas vans que favoritou.
-                    </p>
-                  </div>
-                )}
               </>
             ) : (
               /* nenhum resultado após filtros */
