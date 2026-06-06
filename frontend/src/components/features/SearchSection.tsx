@@ -5,7 +5,6 @@ import Button from "../common/Button";
 
 interface SearchSectionProps {
   onSearch: (filters: {
-    origem: string;
     instituicao: string;
     periodo: string;
   }) => void;
@@ -18,12 +17,11 @@ const SearchSection = ({
   showResultsCount = false,
   resultsCount = 0,
 }: SearchSectionProps) => {
-  const [origem, setOrigem] = useState("");
   const [instituicao, setInstituicao] = useState("");
   const [periodo, setPeriodo] = useState("");
 
   const handleSubmit = () => {
-    onSearch({ origem, instituicao, periodo });
+    onSearch({ instituicao, periodo });
   };
 
   return (
@@ -49,14 +47,7 @@ const SearchSection = ({
 
         <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-4xl mx-auto">
           <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <Input
-                label="Origem (Bairro/Endereço)"
-                icon={MapPin}
-                value={origem}
-                onChange={(e) => setOrigem(e.target.value)}
-                placeholder="Ex: Centro, Alto da Glória..."
-              />
+            <div className="grid md:grid-cols-1 gap-4">
               <Input
                 label="Instituição de Ensino"
                 icon={MapPin}
