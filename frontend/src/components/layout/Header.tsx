@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Menu, X, ShieldCheck } from "lucide-react";
+import { Menu, X, ShieldCheck, Sun, Moon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from "../../contexts/ThemeContext";
 import type { AuthMode } from "../../types";
 
 interface HeaderProps {
@@ -11,6 +12,7 @@ interface HeaderProps {
 const Header = ({ onOpenAuth }: HeaderProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { theme, toggle } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -90,6 +92,13 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
+            <button
+              onClick={toggle}
+              aria-label="Alternar tema"
+              className="p-2 rounded-lg text-gray-500 hover:text-purple-600 hover:bg-gray-100 transition"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
             {user ? (
               <>
                 <button
@@ -133,9 +142,18 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
             )}
           </div>
 
-          <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X /> : <Menu />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={toggle}
+              aria-label="Alternar tema"
+              className="p-2 rounded-lg text-gray-500 hover:text-purple-600 hover:bg-gray-100 transition"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button onClick={() => setMenuOpen(!menuOpen)}>
+              {menuOpen ? <X /> : <Menu />}
+            </button>
+          </div>
         </div>
 
         {menuOpen && (

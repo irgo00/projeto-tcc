@@ -1,3 +1,111 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Dark Mode ──────────────────────────────────────────────────────────────
+   Todas as regras ficam aqui. Nenhum componente precisa ser alterado.
+   Valores RGB diretos (sem @apply) para evitar dependência circular no PostCSS.
+─────────────────────────────────────────────────────────────────────────────*/
+
+html { transition: background-color 200ms ease, color 200ms ease; }
+
+/* Fundos de página */
+.dark body                                    { background-color: rgb(17 24 39);  }  /* gray-900 */
+.dark .bg-white                               { background-color: rgb(31 41 55)  !important; }  /* gray-800 */
+.dark .bg-gray-50                             { background-color: rgb(17 24 39)  !important; }  /* gray-900 */
+.dark .bg-gray-100                            { background-color: rgb(31 41 55)  !important; }  /* gray-800 */
+.dark .bg-gray-200                            { background-color: rgb(55 65 81)  !important; }  /* gray-700 */
+.dark .bg-slate-50                            { background-color: rgb(17 24 39)  !important; }
+.dark .bg-slate-100                           { background-color: rgb(31 41 55)  !important; }
+
+/* Textos */
+.dark .text-gray-900                          { color: rgb(243 244 246) !important; }  /* gray-100 */
+.dark .text-gray-800                          { color: rgb(229 231 235) !important; }  /* gray-200 */
+.dark .text-gray-700                          { color: rgb(209 213 219) !important; }  /* gray-300 */
+.dark .text-gray-600                          { color: rgb(156 163 175) !important; }  /* gray-400 */
+.dark .text-gray-500                          { color: rgb(107 114 128) !important; }  /* gray-500 */
+.dark .text-gray-300                          { color: rgb(75  85  99)  !important; }  /* gray-600 */
+.dark .text-slate-900                         { color: rgb(243 244 246) !important; }
+.dark .text-slate-600                         { color: rgb(156 163 175) !important; }
+.dark .text-slate-500                         { color: rgb(107 114 128) !important; }
+.dark .text-black                             { color: rgb(243 244 246) !important; }
+
+/* Bordas */
+.dark .border-gray-100                        { border-color: rgb(55 65 81)  !important; }  /* gray-700 */
+.dark .border-gray-200                        { border-color: rgb(55 65 81)  !important; }
+.dark .border-gray-300                        { border-color: rgb(75 85 99)  !important; }  /* gray-600 */
+.dark .border-slate-200                       { border-color: rgb(55 65 81)  !important; }
+.dark .border-t                               { border-top-color:    rgb(55 65 81); }
+.dark .border-b                               { border-bottom-color: rgb(55 65 81); }
+
+/* Divide (separadores entre itens) */
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(55 65 81) !important; /* gray-700 */
+}
+
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(55 65 81) !important;
+}
+
+/* Header */
+.dark header                                  { background-color: rgb(17 24 39) !important; }
+
+/* Inputs, selects, textareas */
+.dark input:not([type='range']):not([type='checkbox']):not([type='radio']),
+.dark select,
+.dark textarea {
+  background-color: rgb(55 65 81)  !important;  /* gray-700 */
+  color:            rgb(243 244 246) !important; /* gray-100 */
+  border-color:     rgb(75 85 99)   !important; /* gray-600 */
+  color-scheme: dark;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgb(107 114 128) !important; /* gray-500 */
+}
+.dark input[type='date'],
+.dark input[type='time'] { color-scheme: dark; }
+
+/* Botão Sair */
+.dark .bg-gray-200.px-6 {
+  background-color: rgb(55 65 81)  !important;
+  color:            rgb(229 231 235) !important;
+}
+.dark .hover\:bg-gray-300:hover { background-color: rgb(75 85 99) !important; }
+
+/* Amber / warning */
+.dark .bg-amber-50    { background-color: rgba(30, 20, 0, 0.6) !important; }
+.dark .text-amber-800 { color: rgb(252 211 77)  !important; }
+.dark .text-amber-700 { color: rgb(251 191 36)  !important; }
+.dark .text-amber-600 { color: rgb(251 191 36)  !important; }
+.dark .border-amber-200 { border-color: rgb(180 130 6) !important; }
+
+/* Red */
+.dark .bg-red-50      { background-color: rgba(30, 0, 0, 0.5) !important; }
+.dark .text-red-700   { color: rgb(252 165 165) !important; }
+.dark .text-red-600   { color: rgb(252 165 165) !important; }
+.dark .border-red-200 { border-color: rgb(153 27 27) !important; }
+
+/* Green */
+.dark .bg-green-50     { background-color: rgba(0, 20, 0, 0.5) !important; }
+.dark .text-green-600  { color: rgb(134 239 172) !important; }
+.dark .border-green-200{ border-color: rgb(22 101 52) !important; }
+
+/* Blue */
+.dark .bg-blue-50      { background-color: rgba(0, 10, 30, 0.5) !important; }
+.dark .text-blue-800   { color: rgb(147 197 253) !important; }
+.dark .border-blue-200 { border-color: rgb(30 64 175) !important; }
+
+/* Purple (tags de conforto, rota atendida) */
+.dark .bg-purple-50    { background-color: rgba(30, 0, 60, 0.5) !important; }
+.dark .text-purple-700 { color: rgb(196 181 253) !important; }
+.dark .border-purple-100 { border-color: rgb(88 28 135 / 0.5) !important; }
+
+/* Yellow (seção de avaliações) */
+.dark .bg-yellow-50    { background-color: rgba(30, 25, 0, 0.6) !important; }
+.dark .text-yellow-400 { color: rgb(251 191 36) !important; }
+.dark .border-yellow-100 { border-color: rgb(120 90 0 / 0.5) !important; }
+.dark .border-yellow-200 { border-color: rgb(133 100 0 / 0.6) !important; }
+
+/* Footer: diferenciar do fundo da página em dark */
+.dark footer { background-color: rgb(3 7 18) !important; }

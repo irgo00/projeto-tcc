@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 import Home from "./pages/Home";
 import Busca from "./pages/Busca";
@@ -35,6 +36,7 @@ function App() {
   const [authModal, setAuthModal] = useState<AuthMode | null>(null);
 
   return (
+    <ThemeProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -46,7 +48,7 @@ function App() {
           <Route path="/dashboard/prestador" element={<DashboardPrestador onOpenAuth={setAuthModal} />} />
           <Route path="/dashboard/admin"     element={<DashboardAdmin     onOpenAuth={setAuthModal} />} />
 
-=          <Route path="/dashboard" element={<DashboardRedirect onOpenAuth={setAuthModal} />} />
+          <Route path="/dashboard" element={<DashboardRedirect onOpenAuth={setAuthModal} />} />
 
           <Route path="/painel-exemplo" element={<PainelAdminExemplo />} />
 
@@ -60,6 +62,7 @@ function App() {
         />
       </BrowserRouter>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

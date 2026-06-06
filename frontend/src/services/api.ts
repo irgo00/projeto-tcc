@@ -17,6 +17,15 @@ api.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Alguns servidores de hospedagem bloqueiam PUT/PATCH/DELETE.
+    // Usamos method spoofing via header X-HTTP-Method-Override (lido pelo middleware do Laravel).
+    const method = config.method?.toUpperCase();
+    if (method === "PUT" || method === "PATCH" || method === "DELETE") {
+      config.headers["X-HTTP-Method-Override"] = method;
+      config.method = "post";
+    }
+
     return config;
   },
   (error) => Promise.reject(error),

@@ -86,7 +86,7 @@ const VanCard: React.FC<VanCardProps> = ({ van, onViewDetails }) => {
             </div>
             <div className="flex items-center">
               <Star className="w-4 h-4 mr-1 text-yellow-400 fill-current" />
-              <span className="text-sm font-bold">{van.avaliacao.toFixed(1)}</span>
+              <span className="text-sm font-bold text-black">{van.avaliacao.toFixed(1)}</span>
               <span className="text-xs text-gray-500 ml-1">({van.totalAvaliacoes})</span>
             </div>
           </div>
