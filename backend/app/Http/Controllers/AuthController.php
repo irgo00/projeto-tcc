@@ -122,12 +122,17 @@ class AuthController extends Controller
     {
         $user = auth()->user();
 
-        $validator = Validator::make($request->all(), [
-            'nome'            => 'sometimes|string|max:255',
-            'nome_fantasia'   => 'sometimes|string|max:255',
-            'email'           => 'sometimes|email|unique:users,email,' . $user->id,
-            'telefone'        => 'sometimes|string|max:20',
-        ]);
+        $rules = [
+            'nome'     => 'sometimes|string|max:255',
+            'email'    => 'sometimes|email|unique:users,email,' . $user->id,
+            'telefone' => 'sometimes|string|max:20',
+        ];
+
+        if ($user->isPrestador()) {
+            $rules['nome_fantasia'] = 'sometimes|nullable|string|max:255';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);

@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: env('API_PREFIX', 'api'),
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->api(prepend: [\Illuminate\Http\Middleware\HandleCors::class]);
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+            \App\Http\Middleware\HttpMethodOverride::class,
+        ]);
         $middleware->alias(['auth' => \App\Http\Middleware\Authenticate::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) { })
