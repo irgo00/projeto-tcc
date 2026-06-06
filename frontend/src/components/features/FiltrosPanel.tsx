@@ -190,11 +190,13 @@ export default function FiltrosPanel({
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  const set = <K extends keyof FiltrosAtivos>(key: K, value: FiltrosAtivos[K]) =>
-    setLocal((prev) => ({ ...prev, [key]: value }));
+  const set = <K extends keyof FiltrosAtivos>(key: K, value: FiltrosAtivos[K]) => {
+    const next = { ...local, [key]: value };
+    setLocal(next);
+    onChange(next);
+  };
 
   const handleAplicar = () => {
-    onChange(local);
     onClose();
   };
 
