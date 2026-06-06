@@ -17,7 +17,7 @@ const RouteMapModal = ({ van, isOpen, onClose }: RouteMapModalProps) => {
     .filter(Boolean);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" title={`Rota: ${van.nome}`}>
+    <Modal isOpen={isOpen} onClose={onClose} size="lg" title={`Serviço: ${van.prestador}`}>
       <div>
         <div className="mb-6">
           <div className="mb-4 rounded-lg border border-purple-200 bg-purple-50 p-4">

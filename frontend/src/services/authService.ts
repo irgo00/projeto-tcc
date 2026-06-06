@@ -39,11 +39,15 @@ export const authService = {
   },
 
   async register(
-    userData: Partial<User> & { dataNascimento?: string; senha?: string; confirmarSenha?: string },
+    userData: Partial<User> & { dataNascimento?: string; senha?: string; confirmarSenha?: string; nomeFantasia?: string },
   ): Promise<{ user: User; token: string }> {
     try {
-      const { dataNascimento, confirmarSenha, ...rest } = userData;
-      const payload = { ...rest, ...(dataNascimento && { data_nascimento: dataNascimento }) };
+      const { dataNascimento, confirmarSenha, nomeFantasia, ...rest } = userData;
+      const payload = {
+        ...rest,
+        ...(dataNascimento && { data_nascimento: dataNascimento }),
+        ...(nomeFantasia && { nome_fantasia: nomeFantasia }),
+      };
       const response = await api.post<AuthResponse>("/register", payload);
 
       if (!response.data.success) {

@@ -28,7 +28,7 @@ interface DashboardPrestadorProps {
 }
 
 const FORM_VAZIO: VanFormData = {
-  nome: '', origem: '', destino: '', instituicao: '', rota: '',
+  instituicao: '', rota: '',
   horario_manha: '', horario_tarde: '', horario_noite: '',
   vagas_totais: '', valor_mensal: '', telefone: '', email: '', van_id: '',
 };
@@ -48,6 +48,12 @@ const CONFORTO_LABELS: Record<string, string> = {
   ar_condicionado: 'Ar-cond.', camera_interna: 'Câmera', porta_automatica: 'Porta auto.',
   wifi: 'Wi-Fi', acessibilidade: 'Acessível', usb_carregador: 'USB',
 };
+
+function formatRouteDescription(rota: string) {
+  const text = rota?.trim() || '';
+  if (!text) return 'Sem descrição de rota';
+  return text.length <= 100 ? text : `${text.slice(0, 100).trim()}...`;
+}
 
 function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const { user, updateUser } = useAuth();
@@ -165,7 +171,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
   const abrirModalEditar = (van: Van) => {
     setEditingVan(van);
     setFormData({
-      nome: van.nome ?? '', origem: van.origem ?? '', destino: van.destino ?? '',
       instituicao: van.instituicao ?? '', rota: van.rota ?? '',
       horario_manha: van.horario_manha ?? '', horario_tarde: van.horario_tarde ?? '',
       horario_noite: van.horario_noite ?? '', vagas_totais: String(van.vagas_totais ?? ''),
@@ -179,9 +184,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
   const validarForm = (): boolean => {
     const errors: FormErrors = {};
-    if (!formData.nome.trim())        errors.nome = 'Nome é obrigatório';
-    if (!formData.origem.trim())      errors.origem = 'Origem é obrigatória';
-    if (!formData.destino.trim())     errors.destino = 'Destino é obrigatório';
     if (!formData.instituicao.trim()) errors.instituicao = 'Instituição é obrigatória';
     if (!formData.rota.trim())        errors.rota = 'Descrição da rota é obrigatória';
     if (!formData.vagas_totais || Number(formData.vagas_totais) < 1)
@@ -197,7 +199,6 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
     setFormLoading(true); setFormError(null);
     try {
       const payload = {
-        nome: formData.nome, origem: formData.origem, destino: formData.destino,
         instituicao: formData.instituicao, rota: formData.rota,
         horario_manha: formData.horario_manha || null,
         horario_tarde: formData.horario_tarde || null,
@@ -429,12 +430,13 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                             )}
                             <div>
                               <div className="flex items-center gap-3 mb-1">
-                                <h3 className="text-xl font-bold text-gray-900">{van.nome}</h3>
+                                <h3 className="text-xl font-bold text-gray-900">{van.prestador}</h3>
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${van.ativa !== false ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                                   {van.ativa !== false ? 'Ativa' : 'Inativa'}
                                 </span>
                               </div>
-                              <p className="text-gray-600 text-sm">{van.origem} → {van.destino}{van.instituicao && <span className="ml-2 text-purple-600 font-medium">· {van.instituicao}</span>}</p>
+                              <p className="text-gray-600 text-sm line-clamp-2 whitespace-pre-line">{formatRouteDescription(van.rota)}</p>
+                              {van.instituicao && <p className="text-xs text-purple-500 mt-0.5">{van.instituicao}</p>}
                               {van.van && <p className="text-xs text-purple-500 mt-0.5">{van.van.modelo} {van.van.marca} · {van.van.placa}</p>}
                             </div>
                           </div>
@@ -449,7 +451,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
 
                         {deletingVanId === van.id && (
                           <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                            <p className="text-red-700 font-medium mb-3 flex items-center gap-2"><AlertCircle className="w-4 h-4" />Excluir "{van.nome}"? Ação irreversível.</p>
+                            <p className="text-red-700 font-medium mb-3 flex items-center gap-2"><AlertCircle className="w-4 h-4" />Excluir esta rota? Ação irreversível.</p>
                             {deleteError && <p className="text-red-600 text-sm mb-3">{deleteError}</p>}
                             <div className="flex gap-2">
                               <Button variant="primary" loading={deleteLoading} onClick={() => handleDeletar(van.id)} className="bg-red-600 hover:bg-red-700 flex items-center gap-2 text-sm"><Trash2 className="w-4 h-4" />Confirmar</Button>
@@ -616,15 +618,20 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
         </div>
       </div>
 
-      <Modal isOpen={showModal} onClose={() => !formLoading && setShowModal(false)} title={editingVan ? `Editar: ${editingVan.nome}` : 'Nova Rota'} size="md">
+      <Modal isOpen={showModal} onClose={() => !formLoading && setShowModal(false)} title={editingVan ? 'Editar Rota' : 'Nova Rota'} size="md">
         <div className="space-y-4">
-          <Input label="Nome da Rota" value={formData.nome} error={formErrors.nome} placeholder="Ex: Van Escolar Central" required onChange={e => setField('nome', e.target.value)} />
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Origem" value={formData.origem} error={formErrors.origem} placeholder="Ex: Centro" required onChange={e => setField('origem', e.target.value)} />
-            <Input label="Destino" value={formData.destino} error={formErrors.destino} placeholder="Ex: UNICENTRO" required onChange={e => setField('destino', e.target.value)} />
-          </div>
           <Input label="Instituição de Ensino" value={formData.instituicao} error={formErrors.instituicao} placeholder="Ex: UNICENTRO, IFPR..." required onChange={e => setField('instituicao', e.target.value)} />
-          <Input label="Descrição da Rota" value={formData.rota} error={formErrors.rota} placeholder="Ex: Centro → UNICENTRO, passando pela Av. Brasil" required onChange={e => setField('rota', e.target.value)} />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descrição da Rota</label>
+            <textarea
+              rows={4}
+              value={formData.rota}
+              onChange={e => setField('rota', e.target.value)}
+              placeholder="Ex: Centro → UNICENTRO, passando pela Av. Brasil"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white resize-vertical"
+            />
+            {formErrors.rota && <p className="mt-1 text-sm text-red-600">{formErrors.rota}</p>}
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Van <span className="text-gray-400 font-normal">(opcional)</span>
@@ -708,7 +715,7 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
                   receberão um e-mail informando que as vagas foram reabertas.
                 </p>
                 <p className="text-purple-700 text-sm font-medium mt-3 bg-purple-50 px-3 py-2 rounded-lg">
-                  Rota: {confirmacaoVagas.van.nome}
+                  Serviço: {confirmacaoVagas.van.prestador}
                 </p>
               </div>
             </div>

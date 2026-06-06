@@ -173,7 +173,7 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
       const digits = van.telefone.replace(/\D/g, '');
       const numero = digits.startsWith('55') ? digits : `55${digits}`;
       const mensagem = encodeURIComponent(
-        `Olá! Encontrei sua van "${van.nome}" no PBTE e tenho interesse. Poderia me passar mais informações?`
+        `Olá! Encontrei seu serviço "${van.prestador}" no PBTE e tenho interesse. Poderia me passar mais informações?`
       );
       window.open(`https://wa.me/${numero}?text=${mensagem}`, '_blank');
     }
@@ -201,8 +201,7 @@ const VanDetailsModal = ({ van, isOpen, onClose, onFavoritoChange }: VanDetailsM
         )}
 
         <div className="mb-5">
-          <h2 className="text-2xl font-bold text-gray-900">{van.nome}</h2>
-          <p className="text-gray-600 mt-0.5">{van.prestador}</p>
+          <h2 className="text-2xl font-bold text-gray-900">{van.prestador}</h2>
           {van.van && (
             <p className="text-sm text-purple-600 mt-1 font-medium">
               {van.van.modelo} {van.van.marca} · {van.van.placa} {van.van.ano ? `(${van.van.ano})` : ''}

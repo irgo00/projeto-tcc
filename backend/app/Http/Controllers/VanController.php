@@ -18,7 +18,7 @@ class VanController extends Controller
         $data = [
             'id'              => $rota->id,
             'nome'            => $rota->nome,
-            'prestador'       => optional($rota->prestador)->nome,
+            'prestador'       => optional($rota->prestador)->nome_fantasia ?: optional($rota->prestador)->nome,
             'origem'          => $rota->origem,
             'destino'         => $rota->destino,
             'instituicao'     => $rota->instituicao,
@@ -70,7 +70,7 @@ class VanController extends Controller
 
     public function index()
     {
-        $rotas = Rota::with(['prestador:id,nome,telefone,email', 'van.fotos'])
+        $rotas = Rota::with(['prestador:id,nome,nome_fantasia,telefone,email', 'van.fotos'])
             ->ativas()
             ->get()
             ->map(fn($rota) => $this->formatRota($rota));
@@ -80,7 +80,7 @@ class VanController extends Controller
 
     public function buscar(Request $request)
     {
-        $query = Rota::with(['prestador:id,nome,telefone,email', 'van.fotos'])->ativas();
+        $query = Rota::with(['prestador:id,nome,nome_fantasia,telefone,email', 'van.fotos'])->ativas();
 
         if ($request->filled('origem')) {
             $query->where('origem', 'like', '%' . $request->origem . '%');
@@ -106,7 +106,7 @@ class VanController extends Controller
             return response()->json(['success' => false, 'message' => 'ID inválido.'], 400);
         }
 
-        $rota = Rota::with(['prestador:id,nome,telefone,email', 'van.fotos'])->find($id);
+        $rota = Rota::with(['prestador:id,nome,nome_fantasia,telefone,email', 'van.fotos'])->find($id);
 
         if (!$rota) {
             return response()->json(['success' => false, 'message' => 'Rota não encontrada.'], 404);
@@ -126,7 +126,7 @@ class VanController extends Controller
             ], 403);
         }
 
-        $rotas = Rota::with('van.fotos')
+        $rotas = Rota::with(['van.fotos', 'prestador:id,nome,nome_fantasia'])
             ->where('prestador_id', $user->id)
             ->withTrashed()
             ->whereNull('deleted_at')
@@ -135,6 +135,7 @@ class VanController extends Controller
                 return [
                     'id'                 => $rota->id,
                     'nome'               => $rota->nome,
+                    'prestador'          => optional($rota->prestador)->nome_fantasia ?: optional($rota->prestador)->nome,
                     'origem'             => $rota->origem,
                     'destino'            => $rota->destino,
                     'instituicao'        => $rota->instituicao,
@@ -183,9 +184,6 @@ class VanController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nome'                    => 'required|string|max:255',
-            'origem'                  => 'required|string|max:255',
-            'destino'                 => 'required|string|max:255',
             'instituicao'             => 'required|string|max:255',
             'rota'                    => 'required|string|max:500',
             'van_id'                  => 'nullable|exists:vans,id',
@@ -217,9 +215,6 @@ class VanController extends Controller
         $rota = Rota::create([
             'prestador_id'      => $user->id,
             'van_id'            => $request->van_id,
-            'nome'              => $request->nome,
-            'origem'            => $request->origem,
-            'destino'           => $request->destino,
             'instituicao'       => $request->instituicao,
             'rota'              => $request->rota,
             'horario_manha'     => $request->horario_manha,
@@ -255,9 +250,6 @@ class VanController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'nome'              => 'sometimes|string|max:255',
-            'origem'            => 'sometimes|string|max:255',
-            'destino'           => 'sometimes|string|max:255',
             'instituicao'       => 'sometimes|string|max:255',
             'rota'              => 'sometimes|string|max:500',
             'van_id'            => 'nullable|exists:vans,id',
@@ -284,7 +276,19 @@ class VanController extends Controller
             }
         }
 
-        $rota->update($request->all());
+        $rota->update($request->only([
+            'instituicao',
+            'rota',
+            'van_id',
+            'horario_manha',
+            'horario_tarde',
+            'horario_noite',
+            'vagas_disponiveis',
+            'valor_mensal',
+            'telefone',
+            'email',
+            'ativa',
+        ]));
         $rota->load(['prestador:id,nome,telefone,email', 'van.fotos']);
 
         return response()->json([

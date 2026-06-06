@@ -24,17 +24,19 @@ function MeuPerfil({ onOpenAuth }: MeuPerfilProps) {
   const [senhaLoading, setSenhaLoading] = useState(false);
   const [senhaFeedback, setSenhaFeedback] = useState<{ tipo: "sucesso" | "erro"; mensagem: string } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{ nome?: string; email?: string; telefone?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ nome?: string; nomeFantasia?: string; email?: string; telefone?: string }>({});
   const [formData, setFormData] = useState({
     nome: user?.nome || "",
+    nomeFantasia: user?.nome_fantasia || "",
     email: user?.email || "",
     telefone: user?.telefone || "",
     cpf: user?.cpf || "",
   });
 
   const handleSave = async () => {
-    const errors: { nome?: string; email?: string; telefone?: string } = {};
+    const errors: { nome?: string; nomeFantasia?: string; email?: string; telefone?: string } = {};
     if (!formData.nome.trim()) errors.nome = "Nome é obrigatório";
+    if (user?.tipo === "prestador" && !formData.nomeFantasia.trim()) errors.nomeFantasia = "Nome Fantasia é obrigatório";
     if (!isValidEmail(formData.email)) errors.email = "E-mail inválido";
     if (!isValidTelefone(formData.telefone)) errors.telefone = "Telefone inválido — informe DDD + número";
     setFieldErrors(errors);
@@ -45,6 +47,7 @@ function MeuPerfil({ onOpenAuth }: MeuPerfilProps) {
     try {
       const response = await api.put("/profile", {
         nome: formData.nome,
+        nome_fantasia: formData.nomeFantasia,
         email: formData.email,
         telefone: formData.telefone,
       });
@@ -62,6 +65,7 @@ function MeuPerfil({ onOpenAuth }: MeuPerfilProps) {
   const handleCancel = () => {
     setFormData({
       nome: user?.nome || "",
+      nomeFantasia: user?.nome_fantasia || "",
       email: user?.email || "",
       telefone: user?.telefone || "",
       cpf: user?.cpf || "",
@@ -183,6 +187,20 @@ function MeuPerfil({ onOpenAuth }: MeuPerfilProps) {
                       setFieldErrors((prev) => ({ ...prev, nome: undefined }));
                     }}
                   />
+                  {user?.tipo === "prestador" && (
+                    <Input
+                      label="Nome Fantasia"
+                      icon={User}
+                      type="text"
+                      value={formData.nomeFantasia}
+                      error={fieldErrors.nomeFantasia}
+                      onChange={(e) => {
+                        setFormData({ ...formData, nomeFantasia: e.target.value });
+                        setFieldErrors((prev) => ({ ...prev, nomeFantasia: undefined }));
+                      }}
+                      placeholder="Ex: Vantur, Escolavan, Van do João..."
+                    />
+                  )}
                   <Input
                     label="Email"
                     icon={Mail}
@@ -217,6 +235,17 @@ function MeuPerfil({ onOpenAuth }: MeuPerfilProps) {
                       <p className="font-medium text-gray-900">{user?.nome}</p>
                     </div>
                   </div>
+                  {user?.tipo === "prestador" && (
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <User className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <p className="text-sm text-gray-600">Nome Fantasia</p>
+                        <p className="font-medium text-gray-900">
+                          {user?.nome_fantasia || "—"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                     <Mail className="w-5 h-5 text-purple-600" />
                     <div>

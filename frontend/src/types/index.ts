@@ -3,6 +3,7 @@ export type AuthMode = 'login' | 'cadastro';
 export interface User {
   id: string;
   nome?: string;
+  nome_fantasia?: string;
   email: string;
   telefone?: string;
   cpf?: string;

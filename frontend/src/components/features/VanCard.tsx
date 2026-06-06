@@ -10,6 +10,26 @@ interface VanCardProps {
   onToggleFavorite: (id: number) => void;
 }
 
+const formatRouteDescription = (rota: string, instituicao?: string) => {
+  let text = rota?.trim() || "";
+
+  if (instituicao) {
+    const index = text.indexOf(instituicao);
+    if (index >= 0) {
+      const end = index + instituicao.length;
+      if (end < text.length && text[end] !== "\n") {
+        text = `${text.slice(0, end)}\n${text.slice(end).trimStart()}`;
+      }
+    }
+  }
+
+  if (text.length > 44) {
+    return `${text.slice(0, 44).trimEnd()}...`;
+  }
+
+  return text;
+};
+
 const VanCard: React.FC<VanCardProps> = ({ van, onViewDetails }) => {
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden">
@@ -17,7 +37,7 @@ const VanCard: React.FC<VanCardProps> = ({ van, onViewDetails }) => {
         {van.foto_principal_url ? (
           <img
             src={van.foto_principal_url}
-            alt={`Foto da van ${van.nome}`}
+            alt={`Foto da van ${van.prestador}`}
             className="w-full h-full object-cover"
             onError={e => {
               (e.currentTarget as HTMLImageElement).style.display = 'none';
@@ -38,14 +58,16 @@ const VanCard: React.FC<VanCardProps> = ({ van, onViewDetails }) => {
 
       <div className="p-5">
         <div className="mb-3">
-          <h3 className="text-lg font-bold text-gray-900 leading-tight">{van.nome}</h3>
-          <p className="text-gray-500 text-sm mt-0.5">{van.prestador}</p>
+          <h3 className="text-lg font-bold text-gray-900 leading-tight">{van.prestador}</h3>
+          <p className="text-gray-500 text-sm mt-0.5">{van.instituicao}</p>
         </div>
 
         <div className="space-y-2 mb-4">
           <div className="flex items-start text-gray-700">
             <MapPin className="w-4 h-4 mr-2 text-purple-600 mt-0.5 flex-shrink-0" />
-            <span className="text-sm line-clamp-2">{van.rota}</span>
+            <span className="text-sm line-clamp-2 whitespace-pre-line">
+              {formatRouteDescription(van.rota, van.instituicao)}
+            </span>
           </div>
           <div className="flex items-start text-gray-700">
             <Clock className="w-4 h-4 mr-2 text-purple-600 mt-0.5 flex-shrink-0" />

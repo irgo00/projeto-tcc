@@ -14,6 +14,7 @@ interface AuthModalProps {
 
 interface FormData {
   nome: string;
+  nomeFantasia: string;
   email: string;
   cpf: string;
   dataNascimento: string;
@@ -33,6 +34,7 @@ const AuthModal = ({
   const [mode, setMode] = useState<AuthMode>(initialMode ?? "login");
   const [formData, setFormData] = useState<FormData>({
     nome: "",
+    nomeFantasia: "",
     email: "",
     cpf: "",
     dataNascimento: "",
@@ -59,6 +61,7 @@ const AuthModal = ({
       setErrors({});
       setFormData({
         nome: "",
+        nomeFantasia: "",
         email: "",
         cpf: "",
         dataNascimento: "",
@@ -75,6 +78,7 @@ const AuthModal = ({
 
     if (!isLogin) {
       if (!formData.nome.trim()) newErrors.nome = "Nome é obrigatório";
+      if (formData.tipo === "prestador" && !formData.nomeFantasia.trim()) newErrors.nomeFantasia = "Nome Fantasia é obrigatório";
       if (!formData.cpf.trim()) newErrors.cpf = "CPF é obrigatório";
       if (!formData.dataNascimento)
         newErrors.dataNascimento = "Data de nascimento é obrigatória";
@@ -158,15 +162,28 @@ const AuthModal = ({
     >
       <div className="space-y-4">
         {!isLogin && (
-          <Input
-            label="Nome Completo"
-            type="text"
-            value={formData.nome}
-            onChange={(e) => handleChange("nome", e.target.value)}
-            placeholder="Digite seu nome"
-            error={errors.nome}
-            required
-          />
+          <>
+            <Input
+              label="Nome Completo"
+              type="text"
+              value={formData.nome}
+              onChange={(e) => handleChange("nome", e.target.value)}
+              placeholder="Digite seu nome"
+              error={errors.nome}
+              required
+            />
+            {formData.tipo === "prestador" && (
+              <Input
+                label="Nome Fantasia"
+                type="text"
+                value={formData.nomeFantasia}
+                onChange={(e) => handleChange("nomeFantasia", e.target.value)}
+                placeholder="Ex: Vantur, Escolavan, Van do João..."
+                error={errors.nomeFantasia}
+                required
+              />
+            )}
+          </>
         )}
 
         <Input

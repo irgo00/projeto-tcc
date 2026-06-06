@@ -43,6 +43,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'nome'            => $request->nome,
+            'nome_fantasia'   => $request->nome_fantasia,
             'email'           => $request->email,
             'cpf'             => $request->cpf,
             'data_nascimento' => $request->data_nascimento,
@@ -122,9 +123,10 @@ class AuthController extends Controller
         $user = auth()->user();
 
         $validator = Validator::make($request->all(), [
-            'nome'     => 'sometimes|string|max:255',
-            'email'    => 'sometimes|email|unique:users,email,' . $user->id,
-            'telefone' => 'sometimes|string|max:20',
+            'nome'            => 'sometimes|string|max:255',
+            'nome_fantasia'   => 'sometimes|string|max:255',
+            'email'           => 'sometimes|email|unique:users,email,' . $user->id,
+            'telefone'        => 'sometimes|string|max:20',
         ]);
 
         if ($validator->fails()) {
@@ -134,7 +136,7 @@ class AuthController extends Controller
         // Troca de e-mail invalida a verificação anterior
         $emailMudou = $request->filled('email') && $request->email !== $user->email;
 
-        $user->update($request->only(['nome', 'email', 'telefone']));
+        $user->update($request->only(['nome', 'nome_fantasia', 'email', 'telefone']));
 
         if ($emailMudou) {
             $user->email_verificado = false;
@@ -189,6 +191,7 @@ class AuthController extends Controller
         return [
             'id'                   => $user->id,
             'nome'                 => $user->nome,
+            'nome_fantasia'        => $user->nome_fantasia,
             'email'                => $user->email,
             'cpf'                  => $user->cpf,
             'telefone'             => $user->telefone,

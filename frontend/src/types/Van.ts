@@ -43,9 +43,6 @@ export interface Van {
 }
 
 export interface VanFormData {
-  nome: string;
-  origem: string;
-  destino: string;
   instituicao: string;
   rota: string;
   horario_manha: string;
