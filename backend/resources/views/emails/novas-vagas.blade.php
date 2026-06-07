@@ -43,10 +43,6 @@
 
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px; color:#374151;">
                     <tr>
-                        <td style="padding:4px 0; width:110px; color:#6b7280;">Trajeto</td>
-                        <td style="padding:4px 0;"><strong>{{ $origem }}</strong> → <strong>{{ $destino }}</strong></td>
-                    </tr>
-                    <tr>
                         <td style="padding:4px 0; color:#6b7280;">Instituição</td>
                         <td style="padding:4px 0;">{{ $instituicao }}</td>
                     </tr>
