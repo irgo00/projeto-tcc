@@ -191,6 +191,7 @@ export default function HabilitacaoSection() {
   const [progresso, setProgresso] = useState<ProgressoHabilitacao | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [showHabilitadoBanner, setShowHabilitadoBanner] = useState(true);
 
   const [uploadModal, setUploadModal] = useState<{
     tipo: DocumentoTipo;
@@ -293,15 +294,18 @@ export default function HabilitacaoSection() {
         </div>
       )}
 
-      {progresso?.habilitado && (
+      {progresso?.habilitado && showHabilitadoBanner && (
         <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
           <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="font-medium text-green-800">Conta habilitada!</p>
             <p className="text-sm text-green-700 mt-0.5">
               Todos os documentos foram aprovados. Você já pode criar e gerenciar suas rotas.
             </p>
           </div>
+          <button onClick={() => setShowHabilitadoBanner(false)} className="flex-shrink-0 text-green-600 hover:text-green-800">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
