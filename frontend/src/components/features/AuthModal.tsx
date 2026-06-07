@@ -160,6 +160,7 @@ const AuthModal = ({
       title={isLogin ? "Bem-vindo de volta!" : "Criar Conta"}
       size="sm"
     >
+      {!isLogin && (
       <div>
         <label className="block text-gray-700 font-medium mb-2">
           Tipo de Cadastro <span className="text-red-500">*</span>
@@ -189,6 +190,7 @@ const AuthModal = ({
           </button>
         </div>
       </div>
+      )}
 
       <div className="my-4"></div> {/* espaçamento entre o tipo de cadastro e os campos do formulário */}
 
