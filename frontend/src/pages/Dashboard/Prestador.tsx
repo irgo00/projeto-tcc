@@ -212,7 +212,13 @@ function DashboardPrestador({ onOpenAuth }: DashboardPrestadorProps) {
       await carregarVans();
       setShowModal(false);
     } catch (err: any) {
-      setFormError(err.response?.data?.message || 'Erro ao salvar. Tente novamente.');
+      const data = err.response?.data;
+      if (data?.errors) {
+        const msgs = Object.values(data.errors).flat().join(' ');
+        setFormError(msgs);
+      } else {
+        setFormError(data?.message || 'Erro ao salvar. Tente novamente.');
+      }
     } finally { setFormLoading(false); }
   };
 
