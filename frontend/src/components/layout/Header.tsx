@@ -78,9 +78,9 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
                   src="/logo-pbte-sigla.svg"
                   alt="PBTE"
                   className="w-auto dark:brightness-0 dark:invert"
-                  style={{ height: '1.1rem' }}
+                  style={{ height: '0.9rem' }}
                 />
-                <span className="text-[0.55rem] font-bold tracking-widest text-gray-800 uppercase leading-tight">
+                <span className="text-[0.50rem] font-bold tracking-widest text-gray-800 uppercase leading-tight">
                   Plataforma de Busca<br />de Transporte Escolar
                 </span>
               </div>
