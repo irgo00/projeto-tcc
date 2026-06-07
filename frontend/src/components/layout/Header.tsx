@@ -61,17 +61,29 @@ const Header = ({ onOpenAuth }: HeaderProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer gap-2" onClick={goHome}>
-            <h1 className="text-2xl font-bold text-purple-600">PBTE</h1>
+          <div className="flex items-center cursor-pointer gap-3" onClick={goHome}>
+            <img
+              src="/logo-pbte.svg"
+              alt="PBTE"
+              className="h-12 w-auto"
+            />
             {isAdmin && (
               <span className="hidden sm:flex items-center gap-1 text-xs font-medium bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
                 <ShieldCheck className="w-3 h-3" /> Admin
               </span>
             )}
             {!isAdmin && (
-              <span className="ml-1 text-sm text-gray-500 hidden sm:block">
-                Transporte Escolar
-              </span>
+              <div className="hidden sm:flex flex-col gap-1 items-start w-15">
+                <img
+                  src="/logo-pbte-sigla.svg"
+                  alt="PBTE"
+                  className="w-auto dark:brightness-0 dark:invert"
+                  style={{ height: '1.1rem' }}
+                />
+                <span className="text-[0.55rem] font-bold tracking-widest text-gray-800 uppercase leading-tight">
+                  Plataforma de Busca<br />de Transporte Escolar
+                </span>
+              </div>
             )}
           </div>
 
