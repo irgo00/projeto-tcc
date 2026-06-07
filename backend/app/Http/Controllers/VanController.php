@@ -257,7 +257,7 @@ class VanController extends Controller
             'horario_tarde'     => 'nullable|date_format:H:i',
             'horario_noite'     => 'nullable|date_format:H:i',
             'vagas_disponiveis' => 'sometimes|integer|min:0',
-            'valor_mensal'      => 'sometimes|numeric|min:0',
+            'valor_mensal'      => 'sometimes|nullable|numeric|min:0',
             'telefone'          => 'sometimes|string|max:20',
             'email'             => 'sometimes|email',
             'ativa'             => 'sometimes|boolean',
