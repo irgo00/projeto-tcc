@@ -13,12 +13,12 @@ class FavoritoController extends Controller
 
         $favoritos = $user
             ->favoritos()
-            ->with(['prestador:id,nome', 'van.fotos'])
+            ->with(['prestador:id,nome,nome_fantasia', 'van.fotos'])
             ->get()
             ->map(fn($rota) => [
                 'id'                 => $rota->id,
-                'nome'               => $rota->nome,
-                'prestador'          => $rota->prestador->nome,
+                'prestador'          => $rota->prestador->nome_fantasia ?: $rota->prestador->nome,
+                'instituicao'        => $rota->instituicao,
                 'rota'               => $rota->rota,
                 'horario'            => $rota->horario_formatado,
                 'vagas'              => $rota->vagas_disponiveis,
@@ -27,6 +27,10 @@ class FavoritoController extends Controller
                 'telefone'           => $rota->telefone,
                 'email'              => $rota->email,
                 'foto_principal_url' => optional($rota->van)->foto_principal_url,
+                'van'                => $rota->van ? [
+                    'modelo' => $rota->van->modelo,
+                    'placa'  => $rota->van->placa,
+                ] : null,
             ]);
 
         return response()->json($favoritos);

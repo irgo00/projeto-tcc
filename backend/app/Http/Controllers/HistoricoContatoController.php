@@ -29,13 +29,13 @@ class HistoricoContatoController extends Controller
 
     public function index()
     {
-        $historico = HistoricoContato::with(['rota:id,nome,prestador_id', 'rota.prestador:id,nome'])
+        $historico = HistoricoContato::with(['rota:id,instituicao,prestador_id', 'rota.prestador:id,nome,nome_fantasia'])
             ->where('usuario_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(20)
             ->through(fn($contato) => [
                 'id'           => $contato->id,
-                'van'          => $contato->rota->nome,
+                'van'          => ($contato->rota->prestador->nome_fantasia ?: $contato->rota->prestador->nome) . ' - ' . $contato->rota->instituicao,
                 'prestador'    => $contato->rota->prestador->nome,
                 'tipo_contato' => $contato->tipo_contato,
                 'data'         => $contato->created_at->format('d/m/Y H:i'),

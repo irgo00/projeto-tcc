@@ -78,14 +78,14 @@ class AvaliacaoController extends Controller
 
         $rotaIds = Rota::where('prestador_id', $user->id)->pluck('id');
 
-        $avaliacoes = Avaliacao::with(['usuario:id,nome', 'rota:id,nome'])
+        $avaliacoes = Avaliacao::with(['usuario:id,nome', 'rota:id,instituicao,prestador_id', 'rota.prestador:id,nome,nome_fantasia'])
             ->whereIn('rota_id', $rotaIds)
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn($avaliacao) => [
                 'id'         => $avaliacao->id,
                 'usuario'    => $avaliacao->usuario->nome,
-                'van'        => $avaliacao->rota->nome,
+                'van'        => ($avaliacao->rota->prestador->nome_fantasia ?: $avaliacao->rota->prestador->nome) . ' - ' . $avaliacao->rota->instituicao,
                 'nota'       => $avaliacao->nota,
                 'comentario' => $avaliacao->comentario,
                 'data'       => $avaliacao->created_at->format('d/m/Y'),
@@ -96,13 +96,13 @@ class AvaliacaoController extends Controller
 
     public function minhas()
     {
-        $avaliacoes = Avaliacao::with('rota:id,nome')
+        $avaliacoes = Avaliacao::with(['rota:id,instituicao,prestador_id', 'rota.prestador:id,nome,nome_fantasia'])
             ->where('usuario_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn($avaliacao) => [
                 'id'         => $avaliacao->id,
-                'van'        => $avaliacao->rota->nome,
+                'van'        => ($avaliacao->rota->prestador->nome_fantasia ?: $avaliacao->rota->prestador->nome) . ' - ' . $avaliacao->rota->instituicao,
                 'nota'       => $avaliacao->nota,
                 'comentario' => $avaliacao->comentario,
                 'data'       => $avaliacao->created_at->format('d/m/Y'),
