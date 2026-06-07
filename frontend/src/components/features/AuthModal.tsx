@@ -160,6 +160,38 @@ const AuthModal = ({
       title={isLogin ? "Bem-vindo de volta!" : "Criar Conta"}
       size="sm"
     >
+      <div>
+        <label className="block text-gray-700 font-medium mb-2">
+          Tipo de Cadastro <span className="text-red-500">*</span>
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => handleChange("tipo", "cliente")}
+            className={`py-3 rounded-lg font-medium transition ${
+              formData.tipo === "cliente"
+                ? "bg-purple-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Cliente
+          </button>
+          <button
+            type="button"
+            onClick={() => handleChange("tipo", "prestador")}
+            className={`py-3 rounded-lg font-medium transition ${
+              formData.tipo === "prestador"
+                ? "bg-purple-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Prestador
+          </button>
+        </div>
+      </div>
+
+      <div className="my-4"></div> {/* espaçamento entre o tipo de cadastro e os campos do formulário */}
+
       <div className="space-y-4">
         {!isLogin && (
           <>
@@ -232,36 +264,6 @@ const AuthModal = ({
               error={errors.telefone}
               required
             />
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Tipo de Cadastro <span className="text-red-500">*</span>
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleChange("tipo", "cliente")}
-                  className={`py-3 rounded-lg font-medium transition ${
-                    formData.tipo === "cliente"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  Cliente
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleChange("tipo", "prestador")}
-                  className={`py-3 rounded-lg font-medium transition ${
-                    formData.tipo === "prestador"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  Prestador
-                </button>
-              </div>
-            </div>
           </>
         )}
 
